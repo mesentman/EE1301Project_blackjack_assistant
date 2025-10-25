@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Camera Stream</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      h1 {
+        color: #0078d7;
+        margin-bottom: 20px;
+      }
+      video {
+        width: 90%;
+        max-width: 480px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        background: black;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        background-color: #0078d7;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #005fa3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Live Camera View</h1>
+    <video id="cameraStream" autoplay playsinline></video>
+    <button id="toggleButton">Toggle Camera</button>
+    <button id="sendButton" onclick="sendFrame()">Send Frame</button>
+    <script>
+      const video = document.getElementById("cameraStream");
+      const toggleButton = document.getElementById("toggleButton");
+      const sendButton = document.getElementById("sendButton");
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      let stream;
+
+      async function startCamera() {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false,
+          });
+          video.srcObject = stream;
+        } catch (error) {
+          alert("Error accessing camera: " + error.message);
+        }
+      }
+
+      function sendFrame() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(async (blob) => {
+          await fetch("/upload", { method: "POST", body: blob });
+        }, "image/jpeg");
+      }
+
+      toggleButton.addEventListener("click", () => {
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          video.srcObject = null;
+          stream = null;
+        } else {
+          startCamera();
+        }
+      });
+
+      setInterval(sendFrame, 16);
+      startCamera();
+    </script>
+  </body>
+</html>
