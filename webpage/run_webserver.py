@@ -52,6 +52,8 @@ def home():
 
 @app.route("/upload", methods=["POST"])
 def upload_frame():
+    # This is pretty damn slow sending jpeg images one at a time with http.
+    # Probably want to look into real time data transfer with sockets.
     print("Received frame!")
     frame = request.data  # binary JPEG
     with open("frame.jpg", "wb") as f:
