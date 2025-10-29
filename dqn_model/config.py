@@ -14,14 +14,13 @@ BATCH_SIZE = 256             # smaller batches often give more stable updates
 REPLAY_CAPACITY = 200_000
 REPLAY_WARMUP = 10_000        # <-- don't train until replay has this many transitions
 TARGET_UPDATE_STEPS = 1000   # sync target net every 1k steps (faster than 2k)
-
+#Core learning parameters
+Gamma = 0.97                  # discount factor\
+LR = 3e-4                    # learning rate
 # Exploration / optimization
 EPS_START = 1.0
 EPS_END = 0.05
-EPS_DECAY = 200_000          # faster decay so agent starts exploiting earlier
-GAMMA = 0.99
-LR = 5e-4                    # learning rate tuned for stability (1e-3 is okay, 5e-4 safer)
-MAX_STEPS_PER_EP = 200
+EPS_DECAY = 300_000          # faster decay so agent starts exploiting earlier                   
 SEED = 42
 
 random.seed(SEED)

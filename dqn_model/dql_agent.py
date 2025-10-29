@@ -1,11 +1,12 @@
 # Existing imports
 import torch, numpy as np, random
 import torch.nn as nn, torch.optim as optim
-from dqn_model.model import DuelingMLP
-from dqn_model.replay_buffer import ReplayBuffer
-from environment import *
-from dqn_model.utils import export_policy
-from dqn_model.config import *
+from model import DuelingMLP
+from replay_buffer import ReplayBuffer
+from enivroment import make_shoe, shoe_draw, play_fixed_player, play_single_hand_dqn, PLAYER_TYPES
+from enivroment import encode_state_vec, true_count_bin_from_running
+from utils import export_policy
+from config import *
 from tqdm import trange
 
 
@@ -70,10 +71,11 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=200
             ns = torch.tensor(np.array(batch.next_state), dtype=torch.float32, device=DEVICE)
             done = torch.tensor(batch.done, dtype=torch.float32, device=DEVICE).unsqueeze(1)
 
-            with torch.no_grad():
-                next_actions = policy_net(ns).argmax(1, keepdim=True)
-                next_q = target_net(ns).gather(1, next_actions)
-                target_val = r + GAMMA * (1 - done) * next_q
+        with torch.no_grad():
+            next_actions = policy_net(ns).argmax(1, keepdim=True)
+            next_q = target_net(ns).gather(1, next_actions)
+            target_val = r + Gamma * (1 - done) * next_q
+
 
             current_val = policy_net(s).gather(1, a)
             loss = nn.SmoothL1Loss()(current_val, target_val)
@@ -85,7 +87,7 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=200
             optimizer.step()
 
             step_count += 1
-            eps = max(EPS_END, EPS_START * (0.999995 ** step_count))
+            eps = EPS_END + (EPS_START - EPS_END) * np.exp(-step_count / EPS_DECAY)
 
             if step_count % TARGET_UPDATE_STEPS == 0:
                 target_net.load_state_dict(policy_net.state_dict())
