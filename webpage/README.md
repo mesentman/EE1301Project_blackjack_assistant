@@ -1,5 +1,12 @@
 # Image Recgonition Webpage
 
+## Datset used to train model
+
+[Dataset](https://universe.roboflow.com/augmented-startups/playing-cards-ow27d/dataset/4#)
+```bash
+curl -L "https://universe.roboflow.com/ds/HbGtpbVgsK?key=puupyHvRLY" > roboflow.zip; unzip roboflow.zip; rm roboflow.zip
+```
+
 ## How to install mkcert
 
 Run these commands in Powershell
