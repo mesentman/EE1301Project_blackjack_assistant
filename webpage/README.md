@@ -1,5 +1,9 @@
 # Image Recgonition Webpage
 
+## Datset used to train model
+
+[Dataset](https://universe.roboflow.com/augmented-startups/playing-cards-ow27d/dataset/4#)
+
 ## How to install mkcert
 
 Run these commands in Powershell

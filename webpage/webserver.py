@@ -7,7 +7,7 @@ from flask import Flask, render_template, request
 app = Flask(__name__)
 
 
-def get_local_ip():
+def _get_local_ip():
     """Detect the local network IP address."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -20,7 +20,7 @@ def get_local_ip():
     return ip
 
 
-def ensure_certificates(ip):
+def _ensure_certificates(ip):
     """Generate mkcert certificates for the current IP if missing."""
     cert_name = f"{ip}-cert.pem"
     key_name = f"{ip}-key.pem"
@@ -50,23 +50,12 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/upload", methods=["POST"])
-def upload_frame():
-    # This is pretty damn slow sending jpeg images one at a time with http.
-    # Probably want to look into real time data transfer with sockets.
-    print("Received frame!")
-    frame = request.data  # binary JPEG
-    with open("frame.jpg", "wb") as f:
-        f.write(frame)
-    return "OK", 200
-
-
-def main():
+def run_server():
     port = 5500
-    ip = get_local_ip()
-    cert_name, key_name = ensure_certificates(ip)
+    ip = _get_local_ip()
+    cert_name, key_name = _ensure_certificates(ip)
     app.run(host="0.0.0.0", port=port, ssl_context=(cert_name, key_name), debug=False)
 
 
 if __name__ == "__main__":
-    main()
+    run_server()
