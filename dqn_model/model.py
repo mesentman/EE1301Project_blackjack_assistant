@@ -43,7 +43,7 @@ class NoisyLinear(nn.Module):
         return nn.functional.linear(x, weight, bias)
 
 
-# Standard Dueling MLP (your original improved)
+# Standard Dueling MLP 
 class DuelingMLP(nn.Module):
     def __init__(self, in_dim, out_dim, hidden=256):
         super().__init__()
@@ -73,7 +73,7 @@ class DuelingMLP(nn.Module):
         return v + (a - a.mean(dim=1, keepdim=True))
 
 
-# Noisy Dueling variant (drop-in replacement)
+# Noisy Dueling variant 
 class NoisyDuelingMLP(nn.Module):
     def __init__(self, in_dim, out_dim, hidden=256, sigma_init=0.5):
         super().__init__()
