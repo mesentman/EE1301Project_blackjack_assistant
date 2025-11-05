@@ -2,9 +2,7 @@ import os
 import socket
 import subprocess
 
-from flask import Flask, render_template, request
-
-app = Flask(__name__)
+from flask import Flask, render_template
 
 
 def _get_local_ip():
@@ -45,16 +43,20 @@ def _ensure_certificates(ip):
     return cert_name, key_name
 
 
-@app.route("/")
+APP = Flask(__name__)
+PORT = 5500
+IP = _get_local_ip()
+
+
+@APP.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", ip=IP)
 
 
 def run_server():
-    port = 5500
-    ip = _get_local_ip()
-    cert_name, key_name = _ensure_certificates(ip)
-    app.run(host="0.0.0.0", port=port, ssl_context=(cert_name, key_name), debug=False)
+    cert_name, key_name = _ensure_certificates(IP)
+    # APP.run(host="0.0.0.0", port=PORT, ssl_context=(cert_name, key_name), debug=False)
+    APP.run(host="0.0.0.0", port=PORT, debug=False)
 
 
 if __name__ == "__main__":
