@@ -1,4 +1,5 @@
 import io
+import ssl
 from threading import Thread
 
 import cv2
@@ -19,8 +20,9 @@ def receive(websocket):
 
 def main():
     Thread(name="FlaskServerThread", target=webserver.run_server, daemon=True).start()
-    #! Doesn't work with HTTPS
-    with serve(receive, webserver.IP, 8001) as server:
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ssl_context.load_cert_chain(certfile=webserver.CERT_NAME, keyfile=webserver.KEY_NAME)
+    with serve(receive, webserver.IP, 8001, ssl=ssl_context) as server:
         server.serve_forever()
 
 

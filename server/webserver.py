@@ -46,6 +46,7 @@ def _ensure_certificates(ip):
 APP = Flask(__name__)
 PORT = 5500
 IP = _get_local_ip()
+CERT_NAME, KEY_NAME = _ensure_certificates(IP)
 
 
 @APP.route("/")
@@ -54,9 +55,7 @@ def home():
 
 
 def run_server():
-    cert_name, key_name = _ensure_certificates(IP)
-    # APP.run(host="0.0.0.0", port=PORT, ssl_context=(cert_name, key_name), debug=False)
-    APP.run(host="0.0.0.0", port=PORT, debug=False)
+    APP.run(host="0.0.0.0", port=PORT, ssl_context=(CERT_NAME, KEY_NAME), debug=False)
 
 
 if __name__ == "__main__":
