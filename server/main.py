@@ -1,3 +1,4 @@
+import time
 from threading import Thread
 
 import webserver
@@ -19,4 +20,11 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    detect_cards("frame.jpg")
+    print("Starting")
+    average_time = 0
+    n = 25
+    for i in range(n):
+        start = time.time()
+        detect_cards("frame.jpg")
+        average_time += time.time() - start
+    print(f"Average detection time: {average_time / n:.3f} seconds")
