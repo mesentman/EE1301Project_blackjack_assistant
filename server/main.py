@@ -5,11 +5,17 @@ from threading import Thread
 
 import cv2
 import numpy as np
+import requests as r
 import webserver
 from card_classification import detect_cards
 from PIL import Image
 from websockets import ConnectionClosedError
 from websockets.sync.server import serve
+
+BASE_URL: str = "https://api.particle.io/v1/devices/"
+DEVICE_ID: str = ""
+PARTICLE_FUNCTION: str = ""
+ACCESS_TOKEN: str = ""  # Don't want to actually store this here
 
 
 def receive(websocket):
@@ -17,9 +23,15 @@ def receive(websocket):
         for message in websocket:
             img = Image.open(io.BytesIO(message))
             frame = np.array(img)[:, :, ::-1]
-            res = detect_cards(frame).plot()
-            cv2.imshow("Live Image", res)
+            ret, display = detect_cards(frame)
+            print(ret)
+            cv2.imshow("Live Image", display)
             cv2.waitKey(1)
+            # r.post(
+            #     url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
+            #     headers={"Authorization": "Bearer " + ACCESS_TOKEN},
+            #     data={"arg": str(ret)},
+            # )
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 

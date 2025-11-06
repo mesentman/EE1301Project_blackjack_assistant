@@ -1,5 +1,6 @@
 import sys
 
+import numpy as np
 from ultralytics import YOLO
 
 MODEL = YOLO("runs/detect/train2/weights/best.pt")
@@ -12,7 +13,7 @@ def create_model(data: str):
     new_model.val()
 
 
-def detect_cards(frame):
+def detect_cards(frame) -> tuple[dict, np.ndarray] | None:
     results = MODEL.predict(frame, verbose=False, conf=MIN_CONFIDENCE)
     if not results:
         return
@@ -20,8 +21,7 @@ def detect_cards(frame):
     types = result.names
     counts = result.boxes.cls.int().bincount()
     ret = {types.get(cid): count.item() for cid, count in enumerate(counts) if count > 0}
-    print(ret)
-    return result
+    return (ret, result.plot())
 
 
 if __name__ == "__main__":
