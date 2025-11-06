@@ -11,8 +11,8 @@ def create_model(data: str):
     new_model.val()
 
 
-def detect_cards(path: str):
-    results = model.predict(path, verbose=False)
+def detect_cards(frame):
+    results = model.predict(frame, verbose=False)
     if not results:
         return
     result = results[0]
@@ -20,6 +20,7 @@ def detect_cards(path: str):
     counts = result.boxes.cls.int().bincount()
     ret = {types.get(cid): count.item() for cid, count in enumerate(counts) if count > 0}
     print(ret)
+    return result
 
 
 if __name__ == "__main__":

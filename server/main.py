@@ -14,7 +14,8 @@ def receive(websocket):
     for message in websocket:
         img = Image.open(io.BytesIO(message))
         frame = np.array(img)[:, :, ::-1]
-        cv2.imshow("Live Image", frame)
+        res = detect_cards(frame).plot()
+        cv2.imshow("Live Image", res)
         cv2.waitKey(1)
 
 
