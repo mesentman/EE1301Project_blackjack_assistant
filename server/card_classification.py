@@ -2,7 +2,8 @@ import sys
 
 from ultralytics import YOLO
 
-model = YOLO("runs/detect/train/weights/best.pt")
+MODEL = YOLO("runs/detect/train2/weights/best.pt")
+MIN_CONFIDENCE = 0.5
 
 
 def create_model(data: str):
@@ -12,7 +13,7 @@ def create_model(data: str):
 
 
 def detect_cards(frame):
-    results = model.predict(frame, verbose=False)
+    results = MODEL.predict(frame, verbose=False, conf=MIN_CONFIDENCE)
     if not results:
         return
     result = results[0]
