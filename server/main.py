@@ -39,7 +39,7 @@ def receive(websocket):
             # r.post(
             #     url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
             #     headers={"Authorization": "Bearer " + ACCESS_TOKEN},
-            #     data={"arg": str(ret)},
+            #     data={"arg": ret},
             # )
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")

@@ -19,9 +19,15 @@ def _get_local_ip():
 
 
 def _ensure_certificates(ip):
-    """Generate mkcert certificates for the current IP if missing."""
+    """Generate mkcert certificates for the current IP if missing and cleanup old ones."""
     cert_name = f"{ip}-cert.pem"
     key_name = f"{ip}-key.pem"
+
+    # Clean up old certificates for other IPs
+    for file in os.listdir("."):
+        if file.endswith(("-cert.pem", "-key.pem")) and not file.startswith(ip):
+            print(f"Removing old certificate file: {file}")
+            os.remove(file)
 
     if not os.path.exists(cert_name) or not os.path.exists(key_name):
         print(f"Generating HTTPS certificate for {ip} using mkcert...")
