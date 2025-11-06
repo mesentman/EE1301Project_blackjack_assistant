@@ -71,7 +71,9 @@
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(async (blob) => {
           if (blob) {
-            socket.send(blob);
+            const buffer = new ArrayBuffer(8);
+            new DataView(buffer).setBigUint64(0, BigInt(Date.now()));
+            socket.send(new Blob([buffer, blob]));
           }
         }, "image/jpeg");
       }

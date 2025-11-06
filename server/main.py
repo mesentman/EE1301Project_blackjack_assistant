@@ -19,9 +19,18 @@ ACCESS_TOKEN: str = ""  # Don't want to actually store this here
 
 
 def receive(websocket):
+    prev_timestamp = None
     try:
         for message in websocket:
-            img = Image.open(io.BytesIO(message))
+            timestamp_ms = int.from_bytes(message[:8])
+            if not prev_timestamp:
+                prev_timestamp = timestamp_ms
+            # Artificial Frame Limiting to ~8 FPS
+            if timestamp_ms - prev_timestamp < 125:
+                continue
+            prev_timestamp = timestamp_ms
+            data = message[8:]
+            img = Image.open(io.BytesIO(data))
             frame = np.array(img)[:, :, ::-1]
             ret, display = detect_cards(frame)
             print(ret)
