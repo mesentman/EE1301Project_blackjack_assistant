@@ -1,6 +1,5 @@
 import io
 import ssl
-from multiprocessing.managers import Server
 from threading import Thread
 
 import cv2
@@ -10,7 +9,7 @@ import webserver
 from card_classification import detect_cards
 from PIL import Image
 from websockets import ConnectionClosedError
-from websockets.sync.server import serve
+from websockets.sync.server import Server, serve
 
 BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = ""
@@ -32,7 +31,10 @@ def receive(websocket):
             data = message[8:]
             img = Image.open(io.BytesIO(data))
             frame = np.array(img)[:, :, ::-1]
-            ret, display = detect_cards(frame)
+            result = detect_cards(frame)
+            if not result:
+                continue
+            ret, display = result
             print(ret)
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)

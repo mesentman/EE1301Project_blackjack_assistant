@@ -18,6 +18,8 @@ def detect_cards(frame) -> tuple[dict, np.ndarray] | None:
     if not results:
         return
     result = results[0]
+    if not result.boxes:
+        return
     types = result.names
     counts = result.boxes.cls.int().bincount()
     ret = {types.get(cid): count.item() for cid, count in enumerate(counts) if count > 0}
