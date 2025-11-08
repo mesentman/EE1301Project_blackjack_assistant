@@ -2,7 +2,7 @@ import math
 import torch
 import torch.nn as nn
 
-# NoisyLinear (for exploration) 
+# ---------- Optional NoisyLinear (for exploration) ----------
 class NoisyLinear(nn.Module):
     """Noisy linear layer from (Fortunato et al., 2017). Useful for exploration."""
     def __init__(self, in_features, out_features, sigma_init=0.5):
@@ -43,7 +43,7 @@ class NoisyLinear(nn.Module):
         return nn.functional.linear(x, weight, bias)
 
 
-# Standard Dueling MLP 
+# ---------- Standard Dueling MLP (your original improved) ----------
 class DuelingMLP(nn.Module):
     def __init__(self, in_dim, out_dim, hidden=256):
         super().__init__()
@@ -73,7 +73,7 @@ class DuelingMLP(nn.Module):
         return v + (a - a.mean(dim=1, keepdim=True))
 
 
-# Noisy Dueling variant 
+# ---------- Noisy Dueling variant (drop-in replacement) ----------
 class NoisyDuelingMLP(nn.Module):
     def __init__(self, in_dim, out_dim, hidden=256, sigma_init=0.5):
         super().__init__()
