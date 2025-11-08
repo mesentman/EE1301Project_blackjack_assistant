@@ -19,8 +19,6 @@ def train_and_export(num_episodes=NUM_EPISODES):
 def train_and_export_test(num_episodes=1000):
     _train_and_export_core(num_episodes, print_progress=True, reward_window=100)
 
-
-# ---------------- Core Training Function ----------------
 def _train_and_export_core(num_episodes, print_progress=False, reward_window=10_000):
     state_dim = 6
 
@@ -30,20 +28,72 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=10_
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
 
-    optimizer = optim.Adam(policy_net.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+    optimizer = torch.optim.Adam(policy_net.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
 
     # ---- Replay buffer ----
     if USE_PER:
         replay = PrioritizedReplayBuffer(REPLAY_CAPACITY, alpha=PER_ALPHA, device=DEVICE)
     else:
-        raise ValueError("This agent expects PER to be True.")
+        raise ValueError("PER must be True for this agent")
 
     step_count = 0
     total_reward_window = 0.0
     smoothed_loss = 0.0
     start_time = time.time()
 
-    # ---- Evaluation function ----
+    # ==== Pre-fill buffer with basic strategy ====
+    print("[🟢] Pre-filling replay buffer with basic strategy...")
+    while len(replay) < REPLAY_WARMUP:
+        shoe = make_shoe()
+        running_count = 0
+        dealer_hand = [shoe_draw(shoe), shoe_draw(shoe)]
+        player_hand = [shoe_draw(shoe), shoe_draw(shoe)]
+        tc_idx = true_count_bin_from_running(running_count, len(shoe))
+
+        # Play hand using basic_strategy (no learning, just fill buffer)
+        reward, running_count = play_single_hand_dqn(
+            policy_net, shoe, running_count, dealer_hand,
+            player_hand, tc_idx, device=DEVICE, replay=replay,
+            reward_scale=REWARD_SCALE, shaping_coeff=0.0
+        )
+    print(f"[🟢] Replay buffer pre-filled ({len(replay)} transitions)")
+
+    # ==== Behavior cloning pre-training ====
+    PRETRAIN_HANDS = 50_000
+    print(f"[🟢] Pre-training policy_net for {PRETRAIN_HANDS} hands...")
+    for _ in range(PRETRAIN_HANDS):
+        shoe = make_shoe()
+        running_count = 0
+        dealer_hand = [shoe_draw(shoe), shoe_draw(shoe)]
+        player_hand = [shoe_draw(shoe), shoe_draw(shoe)]
+        tc_idx = true_count_bin_from_running(running_count, len(shoe))
+
+        # Pick best action from fixed strategies
+        best_action = None
+        max_reward = -float("inf")
+        for strat_fn in PLAYER_TYPES:
+            sim_reward, _ = play_fixed_player(player_hand.copy(), dealer_hand[0], shoe.copy(), running_count, strat_fn)
+            if sim_reward > max_reward:
+                max_reward = sim_reward
+                best_action = PLAYER_TYPES.index(strat_fn)
+
+        # Encode state
+        state_vec = encode_state_vec(player_hand, dealer_hand[0], tc_idx)
+        state_tensor = torch.tensor(state_vec, dtype=torch.float32, device=DEVICE).unsqueeze(0)
+        target_q = torch.zeros(NUM_ACTIONS, device=DEVICE)
+        target_q[best_action] = 1.0  # imitate basic strategy
+
+        # Train policy_net
+        policy_net.train()
+        pred_q = policy_net(state_tensor).squeeze()
+        loss = nn.MSELoss()(pred_q, target_q)
+        optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(policy_net.parameters(), GRAD_CLIP)
+        optimizer.step()
+    print("[🟢] Pre-training complete.")
+
+    # ==== Main DQN training loop ====
     def evaluate_policy(n_eval=500):
         total = 0.0
         for _ in range(n_eval):
@@ -51,13 +101,11 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=10_
             running_count = 0
             dealer_hand = [shoe_draw(shoe), shoe_draw(shoe)]
             for strat_fn in PLAYER_TYPES:
-                play_fixed_player([shoe_draw(shoe), shoe_draw(shoe)],
-                                  dealer_hand[0], shoe, running_count, strat_fn)
+                play_fixed_player([shoe_draw(shoe), shoe_draw(shoe)], dealer_hand[0], shoe, running_count, strat_fn)
             player_hand = [shoe_draw(shoe), shoe_draw(shoe)]
             tc_idx = true_count_bin_from_running(running_count, len(shoe))
-            r, _ = play_single_hand_dqn(policy_net, shoe, running_count,
-                                        dealer_hand, player_hand, tc_idx,
-                                         device=DEVICE, replay=None,
+            r, _ = play_single_hand_dqn(policy_net, shoe, running_count, dealer_hand,
+                                        player_hand, tc_idx, device=DEVICE, replay=None,
                                         reward_scale=REWARD_SCALE, shaping_coeff=0.0)
             total += r
         return total / n_eval
@@ -66,79 +114,63 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=10_
         shoe = make_shoe()
         running_count = 0
         dealer_hand = [shoe_draw(shoe), shoe_draw(shoe)]
-
-        # warm-up fixed strategy players
         for strat_fn in PLAYER_TYPES:
-            play_fixed_player([shoe_draw(shoe), shoe_draw(shoe)],
-                              dealer_hand[0], shoe, running_count, strat_fn)
+            play_fixed_player([shoe_draw(shoe), shoe_draw(shoe)], dealer_hand[0], shoe, running_count, strat_fn)
 
         player_hand = [shoe_draw(shoe), shoe_draw(shoe)]
         tc_idx = true_count_bin_from_running(running_count, len(shoe))
 
-        # ---- Play DQN hand ----
+        # Play hand with current policy
         reward, running_count = play_single_hand_dqn(
             policy_net, shoe, running_count, dealer_hand,
             player_hand, tc_idx, device=DEVICE, replay=replay,
-             reward_scale=REWARD_SCALE, shaping_coeff=SHAPING_COEFF
+            reward_scale=REWARD_SCALE, shaping_coeff=SHAPING_COEFF
         )
-
         total_reward_window += reward
 
-        # ---- Training updates ----
+        # Training update
         if len(replay) >= REPLAY_WARMUP:
-            # PER sampling
             beta = min(1.0, PER_BETA_START + step_count / PER_BETA_FRAMES)
             (batch, idxs, weights) = replay.sample(BATCH_SIZE, beta=beta)
 
             s = batch.state
-            a = batch.action.detach().clone().long().unsqueeze(1)
-            r = batch.reward.detach().clone().float().unsqueeze(1)
+            a = batch.action.detach().long().unsqueeze(1)
+            r = batch.reward.detach().float().unsqueeze(1)
             ns = batch.next_state
-            done = batch.done.detach().clone().float().unsqueeze(1)
+            done = batch.done.detach().float().unsqueeze(1)
 
-            # Double DQN target
             with torch.no_grad():
                 next_actions = policy_net(ns).argmax(1, keepdim=True)
                 next_q = target_net(ns).gather(1, next_actions)
                 target_val = r + GAMMA * (1 - done) * next_q
 
             current_val = policy_net(s).gather(1, a)
-
-            # Loss (with PER weights)
             loss_unreduced = nn.SmoothL1Loss(reduction='none')(current_val, target_val)
             loss = (loss_unreduced * weights).mean()
             smoothed_loss = 0.9 * smoothed_loss + 0.1 * loss.item() if smoothed_loss else loss.item()
 
             optimizer.zero_grad()
             loss.backward()
-            nn.utils.clip_grad_norm_(policy_net.parameters(), GRAD_CLIP)
+            torch.nn.utils.clip_grad_norm_(policy_net.parameters(), GRAD_CLIP)
             optimizer.step()
 
-            # Update PER priorities
             td_errors = (current_val - target_val).detach().cpu().squeeze().abs().numpy()
             replay.update_priorities(idxs, td_errors)
 
-            # Increment step count
             step_count += 1
-
-            # Reset noisy weights
             policy_net.reset_noise()
             target_net.reset_noise()
-
             if step_count % TARGET_UPDATE_STEPS == 0:
                 target_net.load_state_dict(policy_net.state_dict())
 
-        # ---- Logging ----
+        # Logging
         if print_progress and (ep + 1) % reward_window == 0:
             avg_reward = total_reward_window / reward_window
             eval_avg = evaluate_policy(n_eval=500)
-            elapsed = time.time() - start_time
-            eps_per_sec = (ep + 1) / elapsed
-            print(f"[Ep {ep+1:,}] AvgR={avg_reward:.3f} | EvalR={eval_avg:.3f} | Steps={step_count:,} "
-                  f"| Replay={len(replay):,} | Elapsed={elapsed:.1f}s | Ep/s={eps_per_sec:.2f} | Loss={smoothed_loss:.4f}")
+            print(f"[Ep {ep+1:,}] AvgR={avg_reward:.3f} | EvalR={eval_avg:.3f} | Steps={step_count:,} | Replay={len(replay):,} | Loss={smoothed_loss:.4f}")
             total_reward_window = 0
 
-    # ---- Export final policy table ----
+    # ---- Export final policy ----
     policy_table = np.zeros((22, 2, len(COUNT_BINS)), dtype=np.uint8)
     for pt in range(4, 22):
         for ua in [0, 1]:
@@ -153,3 +185,5 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=10_
 
     export_policy(policy_table)
     print("[✅] Training complete — final policy exported!")
+
+
