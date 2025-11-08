@@ -1,7 +1,7 @@
 *.pem
 *.jpg
+*.png
 __pycache__/
 .venv/
 .vscode/
 yolo11n.pt
-runs/

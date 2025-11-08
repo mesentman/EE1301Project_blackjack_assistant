@@ -1,0 +1,20 @@
+Futher improvement:
+Host the server on a public ip & domain (Can be accessed from anywhere)
+    - We have access to the CSE Servers, could maybe host there
+Get a verified SSL certificate (Can be accessed from any device without prior configuration of local certificate)
+    - Cloudflare offers free SSL certificates
+Speed up model inference time (Allow for real time card tracking)
+    - It's faster ran on the umn server, would be even faster with CUDA, maybe other possibilities
+Speed up model training time (I don't have to wait hours)
+    - Need to get pytorch working with CUDA on the umn server
+Basically all of these improvements involve taking the server off my laptop and running it on 
+a dedicated machine with a GPU, but this might be impossible to do on university servers?
+Cloudflared tunneling solves all of the above problems, it will route traffic back to the server
+behind its router and firewall and will do so with a valid domain and ssl certificate
+Now anyone can connect to the blackjack camera server with no prior configuration and inference
+will be faster
+Required Functionality:
+Improve accuracy of model
+    - Train model for longer
+Send data over to Photon (Makes the project actually work)
+    - Using Particle function with output from YOLO model

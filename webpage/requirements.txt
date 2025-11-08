@@ -1,5 +1,0 @@
-Flask
-websockets
-torch 
-torchvision
-ultralytics
