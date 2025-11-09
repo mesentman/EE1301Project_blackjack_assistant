@@ -10,7 +10,7 @@ def make_shoe(num_decks=NUM_DECKS):
     for _ in range(num_decks):
         for r in range(1, 14):
             shoe.extend([min(r, 10)] * 4)
-    random.shuffle(shoe)
+    random.shuffle(shoe)     
     return deque(shoe)
 
 def shoe_draw(shoe):
@@ -242,7 +242,32 @@ def step_blackjack_env(shoe, player_hand, dealer_hand, action, running_count,
 def play_single_hand_dqn(policy_net, shoe, running_count, dealer_hand,
                          player_hand, tc_idx, device, replay,
                          reward_scale=1.0, shaping_coeff=0.0,
-                         step_counter=0, max_steps=MAX_STEPS):
+                         step_counter=0, max_steps=MAX_STEPS, use_basic_strategy=False):
+    
+    if use_basic_strategy:
+        # Encode current state
+        state_vec = encode_state_vec(player_hand, dealer_hand[0], tc_idx)
+
+        # Play using basic strategy
+        reward, running_count = play_fixed_player(
+            player_hand, dealer_hand[0], shoe, running_count,
+            basic_strategy
+        )
+
+        # Push a dummy transition to the replay buffer
+        if replay:
+            next_state = np.zeros_like(state_vec, dtype=np.float32)
+            replay.push(
+                state_vec,      # current state
+                -1,             # dummy action
+                reward * reward_scale,
+                next_state,
+                True            # done
+            )
+
+        return reward * reward_scale, running_count, step_counter
+
+    # ---- Regular DQN gameplay ----
     done = False
     total_reward = 0.0
     state = encode_state_vec(player_hand, dealer_hand[0], tc_idx)
@@ -262,10 +287,10 @@ def play_single_hand_dqn(policy_net, shoe, running_count, dealer_hand,
                 s = torch.zeros_like(s)
             if s.ndim == 1:
                 s = s.unsqueeze(0)
-            #print("DEBUG | state tensor shape:", s.shape)
+            s = s.to(next(policy_net.parameters()).device)
             qvals = policy_net(s)
             if qvals is None or qvals.numel() == 0 or not torch.isfinite(qvals).all():
-                action = np.random.randint(NUM_ACTIONS)  # random valid action
+                action = np.random.randint(NUM_ACTIONS)
             else:
                 action = int(qvals.argmax().item())
                 action = min(action, NUM_ACTIONS - 1)
