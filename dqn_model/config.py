@@ -21,7 +21,7 @@ MAX_STEPS = 30
 NUM_EPISODES = 500_000
 BATCH_SIZE = 512
 REPLAY_CAPACITY = 500_000
-REPLAY_WARMUP = 20_000
+REPLAY_WARMUP = 1_000
 TARGET_UPDATE_STEPS = 2_000
 
 # ------------------------
@@ -54,7 +54,9 @@ PER_BETA_FRAMES = int(NUM_EPISODES * 0.5)
 # ------------------------
 REWARD_SCALE = 1.0
 SHAPING_COEFF = 0.01
-
+#Pre fill settings
+PRE_FILL_STEPS = 10
+PRE_FILL_TRANSITIONS = 2000
 # ------------------------
 # REPRODUCIBILITY
 # ------------------------
