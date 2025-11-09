@@ -27,7 +27,8 @@ class NoisyLinear(nn.Module):
         nn.init.uniform_(self.weight_mu, -mu_range, mu_range)
         nn.init.uniform_(self.bias_mu, -mu_range, mu_range)
         nn.init.constant_(self.weight_sigma, self.sigma_init / math.sqrt(self.in_features))
-        nn.init.constant_(self.bias_sigma, self.sigma_init / math.sqrt(self.out_features))
+        # FIXED: Use in_features for both weight and bias sigma (was out_features for bias)
+        nn.init.constant_(self.bias_sigma, self.sigma_init / math.sqrt(self.in_features))
 
     def reset_noise(self):
         self.weight_eps.normal_()
@@ -49,12 +50,13 @@ class DuelingMLP(nn.Module):
         super().__init__()
         self.fc = nn.Sequential(
             nn.Linear(in_dim, hidden),
-            nn.LayerNorm(hidden),
+            nn.LayerNorm((hidden,)),   
             nn.LeakyReLU(0.01),
             nn.Linear(hidden, hidden),
-            nn.LayerNorm(hidden),
-            nn.LeakyReLU(0.01),
-        )
+            nn.LayerNorm((hidden,)),   
+            nn.LeakyReLU(0.01)         
+)
+
         self.value = nn.Linear(hidden, 1)
         self.adv = nn.Linear(hidden, out_dim)
 
@@ -77,17 +79,16 @@ class DuelingMLP(nn.Module):
 class NoisyDuelingMLP(nn.Module):
     def __init__(self, in_dim, out_dim, hidden=256, sigma_init=0.5):
         super().__init__()
-        # keep deterministic FC for stability; replace final adv with noisy if desired
         self.fc = nn.Sequential(
             nn.Linear(in_dim, hidden),
-            nn.LayerNorm(hidden),
+            nn.LayerNorm((hidden,)),
             nn.LeakyReLU(0.01),
             nn.Linear(hidden, hidden),
-            nn.LayerNorm(hidden),
+            nn.LayerNorm((hidden,)),
             nn.LeakyReLU(0.01),
         )
-        self.value = nn.Linear(hidden, 1)
-        # advantage will be noisy linear to encourage exploration without epsilon
+        
+        self.value = NoisyLinear(hidden, 1, sigma_init=sigma_init)
         self.adv = NoisyLinear(hidden, out_dim, sigma_init=sigma_init)
 
         self.apply(self._init_weights)
@@ -99,10 +100,11 @@ class NoisyDuelingMLP(nn.Module):
                 nn.init.constant_(m.bias, 0.0)
 
     def reset_noise(self):
-        if isinstance(self.adv, NoisyLinear):
-            self.adv.reset_noise()
+        self.value.reset_noise()
+        self.adv.reset_noise()
 
     def forward(self, x):
+        #print(f"[DEBUG] forward input shape: {x.shape}, dtype: {x.dtype}")
         x = self.fc(x)
         v = self.value(x)
         a = self.adv(x)
