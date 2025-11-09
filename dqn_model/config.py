@@ -14,7 +14,7 @@ NUM_DECKS = 6
 NUM_ACTIONS = 5
 ACTION_NAMES = ["HIT", "STAND", "DOUBLE", "SPLIT", "SURRENDER"]
 COUNT_BINS = list(range(-5, 6))  # e.g., card counting feature range
-
+MAX_STEPS = 200
 # ------------------------
 # TRAINING PARAMETERS
 # ------------------------
