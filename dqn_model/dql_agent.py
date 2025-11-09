@@ -132,21 +132,26 @@ def _train_and_export_core(num_episodes, print_progress=False, reward_window=10_
 
     # ==== Pre-fill buffer with basic strategy ====
     print("[🟢] Pre-filling replay buffer with basic strategy...")
-    while len(replay) < REPLAY_WARMUP:
-        shoe = make_shoe()
-        running_count = 0
+    shoe = make_shoe(NUM_DECKS)
+    running_count = 0
+    while len(replay) < PRE_FILL_TRANSITIONS:
+        if len(shoe) < 52:
+            shoe = make_shoe()
+            running_count = 0
+        
         dealer_hand = [shoe_draw(shoe), shoe_draw(shoe)]
         player_hand = [shoe_draw(shoe), shoe_draw(shoe)]
         tc_idx = true_count_bin_from_running(running_count, len(shoe))
 
         reward, running_count, _ = play_single_hand_dqn(
-            policy_net, shoe, running_count, dealer_hand,
-            player_hand, tc_idx, device=DEVICE, replay=replay,
-            reward_scale=REWARD_SCALE, shaping_coeff=0.0,
-            step_counter=0, max_steps=MAX_STEPS
-        )
+        None, shoe, running_count, dealer_hand,
+        player_hand, tc_idx, device=DEVICE, replay=replay,
+        reward_scale=REWARD_SCALE, shaping_coeff=0.0,
+        step_counter=0, max_steps=5,
+        use_basic_strategy=True   # add a flag to use basic strategy only
+)
+    
     print(f"[🟢] Replay buffer pre-filled ({len(replay)} transitions)")
-
     # ==== Main DQN training loop ====
     for ep in range(num_episodes):
         shoe = make_shoe()
