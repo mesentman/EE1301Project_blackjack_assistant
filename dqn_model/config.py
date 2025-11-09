@@ -14,7 +14,7 @@ NUM_DECKS = 6
 NUM_ACTIONS = 5
 ACTION_NAMES = ["HIT", "STAND", "DOUBLE", "SPLIT", "SURRENDER"]
 COUNT_BINS = list(range(-5, 6))  # e.g., card counting feature range
-MAX_STEPS = 200
+MAX_STEPS = 30
 # ------------------------
 # TRAINING PARAMETERS
 # ------------------------
@@ -64,4 +64,12 @@ SHAPING_COEFF = 0.01
 #torch.manual_seed(SEED)
 #if torch.cuda.is_available():
  #   torch.cuda.manual_seed_all(SEED)
+# ---------------- Quick test parameters ----------------
+TEST_NUM_EPISODES = 50         # small number to finish fast
+TEST_REPLAY_WARMUP = 50     # fewer transitions to pre-fill buffer
+TEST_BATCH_SIZE = 32           # smaller batch size
+TEST_HIDDEN = 128              # smaller network for speed
+TEST_MAX_STEPS = 10         # max steps per hand (optional)
+TEST_REWARD_SCALE = 1.0        # same reward scale
+TEST_SHAPING_COEFF = 0.0       # no shaping to simplify
 
