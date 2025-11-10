@@ -13,7 +13,7 @@ def create_model(data: str):
     new_model.val()
 
 
-def detect_cards(frame) -> tuple[dict, np.ndarray] | None:
+def detect_cards(frame) -> tuple[dict[str, int], np.ndarray] | None:
     results = MODEL.predict(frame, verbose=False, conf=MIN_CONFIDENCE)
     if not results:
         return
@@ -22,7 +22,7 @@ def detect_cards(frame) -> tuple[dict, np.ndarray] | None:
         return
     types = result.names
     counts = result.boxes.cls.int().bincount()
-    ret = {types.get(cid): count.item() for cid, count in enumerate(counts) if count > 0}
+    ret = {types.get(cid): min(count.item(), 1) for cid, count in enumerate(counts) if count > 0}
     return (ret, result.plot())
 
 
