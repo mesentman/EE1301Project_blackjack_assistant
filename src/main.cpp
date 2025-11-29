@@ -105,7 +105,7 @@ Action get_action_from_table(int player_total, bool useable_ace,
     true_count = 11;
   }
   int ret = blackjack_policy[player_total][ace][dealer_upcard][true_count];
-  return HIT;
+  return HIT; // TODO: Change to reflect table output
 }
 
 void setup() {

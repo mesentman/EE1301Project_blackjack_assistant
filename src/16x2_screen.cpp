@@ -19,6 +19,8 @@ void lcd_data(uint8_t data) { // LCD function -- AI
   Wire.endTransmission();
 }
 
+void lcd_clear() { lcd_command(0x01); }
+
 void lcd_init() { // LCD function -- AI
   Wire.begin();
   delay(50);
@@ -45,8 +47,6 @@ void lcd_print(const char *str) { // LCD function -- AI
     lcd_data(*str++);
   }
 }
-
-void lcd_clear() { lcd_command(0x01); }
 
 void display_scanning() {
   delay(5); // Give LCD time to clear fully

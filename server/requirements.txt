@@ -3,3 +3,4 @@ websockets
 torch 
 torchvision
 ultralytics
+python-dotenv

@@ -1,4 +1,5 @@
 import io
+import os
 import ssl
 from threading import Thread
 
@@ -7,14 +8,17 @@ import numpy as np
 import requests as r
 import webserver
 from card_classification import detect_cards
+from dotenv import load_dotenv
 from PIL import Image
 from websockets import ConnectionClosedError
 from websockets.sync.server import Server, serve
 
+load_dotenv()
+
 BASE_URL: str = "https://api.particle.io/v1/devices/"
-DEVICE_ID: str = ""
+DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
 PARTICLE_FUNCTION: str = "receive_cards"
-ACCESS_TOKEN: str = ""  # Don't want to actually store this here
+ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
 
 
 SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
@@ -33,6 +37,7 @@ def card_to_int(card: str) -> int:
 
 
 def format_cards_for_particle(cards: dict[str, int]) -> str:
+    # TODO:  This assumes half and half split between player and dealer
     card_list = [card_to_int(c) for c in cards.keys()]
     mid = len(card_list) // 2
     player_cards = card_list[:mid]
@@ -44,6 +49,7 @@ def format_cards_for_particle(cards: dict[str, int]) -> str:
 
 def receive(websocket):
     prev_timestamp = None
+    print("WebSocket Connection Established.")
     try:
         for message in websocket:
             timestamp_ms = int.from_bytes(message[:8])
@@ -64,11 +70,12 @@ def receive(websocket):
             print(formatted)
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)
-            r.post(
-                url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
-                headers={"Authorization": "Bearer " + ACCESS_TOKEN},
-                data={"arg": formatted},
-            )
+            if cards:
+                r.post(
+                    url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
+                    headers={"Authorization": "Bearer " + ACCESS_TOKEN},
+                    data={"arg": formatted},
+                )
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
