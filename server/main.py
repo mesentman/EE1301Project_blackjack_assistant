@@ -66,6 +66,7 @@ def receive(websocket):
             if not result:
                 continue
             cards, display = result
+            print(cards)
             formatted = format_cards_for_particle(cards)
             print(formatted)
             cv2.imshow("Live Image", display)
