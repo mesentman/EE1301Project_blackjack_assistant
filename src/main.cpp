@@ -30,7 +30,7 @@ Action getActionFromTable(int player_total, bool useable_ace, int dealer_upcard,
 
 void setup() {
   Serial.begin(9600);
-  init_screen();
+  lcd_init();
 }
 
 void loop() {
@@ -39,11 +39,9 @@ void loop() {
   int dealer_upcard = 10;
   int true_count = 0;
 
-  print_scanning();
-
   Action action =
       getActionFromTable(player_total, usable_ace, dealer_upcard, true_count);
-  print_action(action, player_total);
+  display_action(action, player_total);
 
   Serial.printf("Player total: %d, usable ace: %d, Dealer: %d -> Action: %d\n",
                 player_total, usable_ace ? 1 : 0, dealer_upcard, (int)action);
