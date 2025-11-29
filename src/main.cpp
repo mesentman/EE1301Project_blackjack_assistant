@@ -34,6 +34,9 @@ void setup() {
 }
 
 void loop() {
+  display_scanning();
+  delay(5000);
+
   int player_total = 16;
   bool usable_ace = false;
   int dealer_upcard = 10;
