@@ -85,6 +85,12 @@ int receive_cards(String data) {
   return player_cards.size() + dealer_cards.size();
 }
 
+/// @brief
+/// @param player_total
+/// @param useable_ace
+/// @param dealer_upcard Expected between 2-11 (11 = ace)
+/// @param true_count
+/// @return
 Action get_action_from_table(int player_total, bool useable_ace,
                              int dealer_upcard, int true_count) {
   if (player_total < 0) {
@@ -93,10 +99,9 @@ Action get_action_from_table(int player_total, bool useable_ace,
     player_total = 21;
   }
   int ace = useable_ace ? 1 : 0;
-  if (dealer_upcard < 0) {
+  dealer_upcard -= 1;
+  if (dealer_upcard == 10) {
     dealer_upcard = 0;
-  } else if (dealer_upcard > 9) {
-    dealer_upcard = 9;
   }
   true_count += 5; // Change into an index in the table
   if (true_count < 0) {
@@ -105,7 +110,15 @@ Action get_action_from_table(int player_total, bool useable_ace,
     true_count = 11;
   }
   int ret = blackjack_policy[player_total][ace][dealer_upcard][true_count];
-  return HIT; // TODO: Change to reflect table output
+  if (ret == 0)
+    return HIT;
+  if (ret == 1)
+    return STAND;
+  if (ret == 2)
+    return DOUBLE_DOWN;
+  if (ret == 30)
+    return SPLIT;
+  return SURRENDER; // Never happens?
 }
 
 void setup() {
@@ -115,9 +128,8 @@ void setup() {
   display_scanning();
 }
 
-int true_count = 0;
-
 void loop() {
+  static int true_count = 0;
   if (new_hand) {
     int player_total = 0;
     int ace_count = 0;

@@ -6,7 +6,7 @@ enum Action { HIT = 0, STAND = 1, DOUBLE_DOWN = 2, SURRENDER = 3, SPLIT = 4 };
 
 // Player total from 0 to 21 (22 states)
 // Usable ace 0 = no, 1 = yes (2 states)
-// Dealer showing card from 2 to Ace (10 states)
+// Dealer showing card from Ace to 10 (10 states)
 // True count from -5 to +6 (12 states)
 // clang-format off
 const uint8_t blackjack_policy[22][2][10][12] = {
