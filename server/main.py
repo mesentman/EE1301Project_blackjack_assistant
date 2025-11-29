@@ -13,8 +13,33 @@ from websockets.sync.server import Server, serve
 
 BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = ""
-PARTICLE_FUNCTION: str = ""
+PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = ""  # Don't want to actually store this here
+
+
+SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
+# fmt: off
+RANK_MAP: dict[str, int] = {
+    "A": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6,
+    "8": 7, "9": 8, "10": 9, "J": 10, "Q": 11, "K": 12
+}
+# fmt: on
+
+
+def card_to_int(card: str) -> int:
+    suit = card[-1]
+    rank = card[:-1]
+    return SUIT_MAP[suit] * 13 + RANK_MAP[rank]
+
+
+def format_cards_for_particle(cards: dict[str, int]) -> str:
+    card_list = [card_to_int(c) for c in cards.keys()]
+    mid = len(card_list) // 2
+    player_cards = card_list[:mid]
+    dealer_cards = card_list[mid:]
+    player_str = ",".join(str(c) for c in player_cards)
+    dealer_str = ",".join(str(c) for c in dealer_cards)
+    return f"{player_str}|{dealer_str}"
 
 
 def receive(websocket):
@@ -34,15 +59,16 @@ def receive(websocket):
             result = detect_cards(frame)
             if not result:
                 continue
-            ret, display = result
-            print(ret)
+            cards, display = result
+            formatted = format_cards_for_particle(cards)
+            print(formatted)
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)
-            # r.post(
-            #     url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
-            #     headers={"Authorization": "Bearer " + ACCESS_TOKEN},
-            #     data={"arg": ret},
-            # )
+            r.post(
+                url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
+                headers={"Authorization": "Bearer " + ACCESS_TOKEN},
+                data={"arg": formatted},
+            )
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
