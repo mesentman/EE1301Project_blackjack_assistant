@@ -2,7 +2,7 @@
 #define BLACKJACK_HPP
 
 #include <stdint.h>
-enum Action { HIT = 0, STAND = 1, DOUBLE_DOWN = 2, SURRENDER = 3, SPLIT = 4 };
+enum Action { HIT, STAND, DOUBLE_DOWN, SPLIT };
 
 // Player total from 0 to 21 (22 states)
 // Usable ace 0 = no, 1 = yes (2 states)

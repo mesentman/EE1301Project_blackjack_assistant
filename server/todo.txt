@@ -17,7 +17,6 @@ Required Functionality:
 Improve accuracy of model
     - Train model for longer
     - Find pre trained models that are better
-Fix everything with the table and assigning cards, 
 get screen working, 
 try and run on server for speed (tunneling, need to modify WSS code a tad)
 Assigning cards:

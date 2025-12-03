@@ -89,9 +89,6 @@ void display_action(Action action, int player_total) {
   case SPLIT:
     lcd_print("SPLIT");
     break;
-  case SURRENDER:
-    lcd_print("SURRENDER");
-    break;
   }
   lcd_set_cursor(0, 1);
   sprintf(buffer, "Count: %d", player_total);

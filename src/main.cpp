@@ -91,7 +91,7 @@ int receive_cards(String data) {
 /// @param dealer_upcard Expected between 2-11 (11 = ace)
 /// @param true_count
 /// @return
-Action get_action_from_table(int player_total, bool useable_ace,
+Action get_action_from_table(int player_total, bool same_card, bool useable_ace,
                              int dealer_upcard, int true_count) {
   if (player_total < 0) {
     player_total = 0;
@@ -110,15 +110,20 @@ Action get_action_from_table(int player_total, bool useable_ace,
     true_count = 11;
   }
   int ret = blackjack_policy[player_total][ace][dealer_upcard][true_count];
+  if (ret / 10 == 3) {
+    if (same_card) {
+      return SPLIT;
+    }
+    ret = ret % 10;
+  }
   if (ret == 0)
     return HIT;
   if (ret == 1)
     return STAND;
   if (ret == 2)
     return DOUBLE_DOWN;
-  if (ret == 30)
-    return SPLIT;
-  return SURRENDER; // Never happens?
+  Serial.printf("Fell through to last STAND.\n");
+  return STAND; // Should never happen
 }
 
 void setup() {
@@ -143,6 +148,9 @@ void loop() {
       ace_count--;
     }
     bool usable_ace = ace_count > 0 && player_total <= 21;
+    bool same_card =
+        (player_cards.size() == 2 && get_card_value(player_cards.at(0)) ==
+                                         get_card_value(player_cards.at(1)));
 
     int dealer_upcard = 0;
     if (!dealer_cards.empty()) {
@@ -156,7 +164,7 @@ void loop() {
       true_count += get_hi_lo_count(card);
     }
 
-    Action action = get_action_from_table(player_total, usable_ace,
+    Action action = get_action_from_table(player_total, same_card, usable_ace,
                                           dealer_upcard, true_count);
     display_action(action, player_total);
 
