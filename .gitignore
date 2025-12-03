@@ -7,6 +7,7 @@ yolo11n.pt
 nul
 lib/
 .env
+cloudflared-linux-amd64
 
 # Key files
 *.der
