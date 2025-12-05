@@ -167,7 +167,7 @@ void loop() {
 
     Action action = get_action_from_table(player_total, same_card, usable_ace,
                                           dealer_upcard, true_count);
-    display_action(action, player_total);
+    // display_action(action, player_total);
 
     Serial.printf(
         "Player total: %d, usable ace: %d, Dealer: %d -> Action: %d\n",
