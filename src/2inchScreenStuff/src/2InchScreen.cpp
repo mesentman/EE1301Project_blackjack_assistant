@@ -65,7 +65,7 @@ String playerScount;
 
 
 
-void setup() {
+void screenSetup () {
     SPI.begin();
     SPI.beginTransaction(SPISettings(25000000, MSBFIRST, SPI_MODE0));
     pinMode(DEV_CS_PIN, OUTPUT);
@@ -122,11 +122,17 @@ void setup() {
 
 }
 
-bool runOnce = true;
-int dcs = 1; //dealer card start
-int pcs = 162; //player card start
-int CSW= 19; //card stack width
-void loop() {
+
+// change for running cards code on screen
+bool runOnce = false;
+// change for running cards code on screen
+
+
+
+int dcs = 1; //dealer card pixel start
+int pcs = 162; //player card pixel start
+int CSW = 19; //card stack pixel width
+void screenLOOP() {
 
     while (runOnce == false) {
 
