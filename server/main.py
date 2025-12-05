@@ -20,6 +20,7 @@ BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
 PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
+BITLY_TOKEN: str = os.getenv("BITLY_ACCESS_TOKEN", "")
 WEBSOCKET_PORT: int = 8001
 
 HAND_HISTORY_SIZE: int = 15
@@ -128,6 +129,14 @@ def process_request(path, request_headers):
     return None
 
 
+def shorten_url(long_url: str) -> str:
+    api_url = "https://api-ssl.bitly.com/v4/shorten"
+    headers = {"Authorization": f"Bearer {BITLY_TOKEN}", "Content-Type": "application/json"}
+    data = {"long_url": long_url}
+    response = r.post(api_url, json=data, headers=headers)
+    return response.json().get("link")
+
+
 def main():
     tunnel = False
     ws_url = ""
@@ -142,7 +151,7 @@ def main():
         server = serve(receive, webserver.IP, WEBSOCKET_PORT, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
     if tunnel:
-        print(f"Live server running at url: {live_url}")
+        print(f"Live server running at url: {shorten_url(live_url)}")
     webserver.run_server(tunnel, ws_url)
     server.shutdown()
     if tunnel:
