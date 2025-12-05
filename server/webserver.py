@@ -6,7 +6,7 @@ from turtle import ht
 
 from flask import Flask, render_template
 
-from server.main import WEBSOCKET_PORT
+from main import WEBSOCKET_PORT
 
 
 def _get_local_ip():
@@ -60,12 +60,13 @@ CERT_NAME, KEY_NAME = _ensure_certificates(IP)
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile=CERT_NAME, keyfile=KEY_NAME)
 using_tunnel = False
+external_ip = "asdf.trycloudflare.com"
 
 
 @APP.route("/")
 def home():
     if using_tunnel:
-        return render_template("index.html", ip="your-tunnel-domain")
+        return render_template("index.html", ip=external_ip)
     else:
         return render_template("index.html", ip=IP + ":" + str(WEBSOCKET_PORT))
 
