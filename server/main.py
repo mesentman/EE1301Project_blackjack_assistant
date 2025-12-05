@@ -1,6 +1,6 @@
 import io
 import os
-import ssl
+import sys
 from threading import Thread
 
 import cv2
@@ -8,6 +8,7 @@ import numpy as np
 import requests as r
 import webserver
 from card_classification import detect_cards
+from collections import Counter
 from dotenv import load_dotenv
 from PIL import Image
 from websockets import ConnectionClosedError
@@ -19,6 +20,10 @@ BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
 PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
+
+HAND_HISTORY_SIZE: int = 15
+MIN_MODE_COUNT: int = 10
+MIN_CARDS_DETECTED: int = 1
 
 
 SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
@@ -44,8 +49,29 @@ def format_cards_for_particle(dealer_cards: dict[str, int], player_cards: dict[s
     return f"{player_str}|{dealer_str}"
 
 
+def hand_to_key(dealer_cards: dict[str, int], player_cards: dict[str, int]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    return (tuple(sorted(dealer_cards.keys())), tuple(sorted(player_cards.keys())))
+
+
+def get_stable_hand(
+    hand_history: list[tuple[tuple[str, ...], tuple[str, ...]]],
+) -> tuple[tuple[str, ...], tuple[str, ...]] | None:
+    if len(hand_history) < HAND_HISTORY_SIZE:
+        return None
+    counter = Counter(hand_history)
+    mode, count = counter.most_common(1)[0]
+    if count < MIN_MODE_COUNT:
+        return None
+    total_cards = len(mode[0]) + len(mode[1])
+    if total_cards < MIN_CARDS_DETECTED:
+        return None
+    return mode
+
+
 def receive(websocket):
     prev_timestamp = None
+    hand_history: list[tuple[tuple[str, ...], tuple[str, ...]]] = []
+    last_sent_hand: tuple[tuple[str, ...], tuple[str, ...]] | None = None
     print("WebSocket Connection Established.")
     try:
         for message in websocket:
@@ -63,17 +89,32 @@ def receive(websocket):
             if not result:
                 continue
             dealer_cards, player_cards, display = result
-            print(f"Dealer: {dealer_cards}, Player: {player_cards}")
-            formatted = format_cards_for_particle(dealer_cards, player_cards)
-            print(formatted)
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)
-            if dealer_cards or player_cards:
-                r.post(
-                    url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
-                    headers={"Authorization": "Bearer " + ACCESS_TOKEN},
-                    data={"arg": formatted},
-                )
+
+            print(f"Detected - Dealer: {dealer_cards}, Player: {player_cards}")
+            hand_key = hand_to_key(dealer_cards, player_cards)
+            hand_history.append(hand_key)
+            if len(hand_history) > HAND_HISTORY_SIZE:
+                hand_history.pop(0)
+
+            stable_hand = get_stable_hand(hand_history)
+            if not stable_hand or stable_hand == last_sent_hand:
+                continue
+
+            last_sent_hand = stable_hand
+            stable_dealer = {card: 1 for card in stable_hand[0]}
+            stable_player = {card: 1 for card in stable_hand[1]}
+            print(f"Dealer: {stable_dealer}, Player: {stable_player}")
+            formatted = format_cards_for_particle(stable_dealer, stable_player)
+            print(formatted)
+            resp = r.post(
+                url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
+                headers={"Authorization": "Bearer " + ACCESS_TOKEN},
+                data={"arg": formatted},
+            )
+            print(resp.text)
+            print(resp.url)
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
@@ -83,12 +124,23 @@ def run_websocket(server: Server):
         server.serve_forever()
 
 
+def process_request(path, request_headers):
+    headers = [
+        ("Content-Type", "text/plain"),
+        ("Content-Length", "2"),
+    ]
+    return (200, headers, b"OK")
+
+
 def main():
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    ssl_context.load_cert_chain(certfile=webserver.CERT_NAME, keyfile=webserver.KEY_NAME)
-    server = serve(receive, webserver.IP, 8001, ssl=ssl_context)
+    https = True
+    if len(sys.argv) > 1 and sys.argv[1] == "--http":
+        https = False
+        server = serve(receive, "localhost", 5500, process_request=process_request)
+    else:
+        server = serve(receive, webserver.IP, 8001, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
-    webserver.run_server()
+    webserver.run_server(https)
     server.shutdown()
 
 

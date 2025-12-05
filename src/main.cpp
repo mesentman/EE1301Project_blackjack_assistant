@@ -53,6 +53,7 @@ void parse_card_list(String data, std::vector<int> &out) {
 }
 
 int receive_cards(String data) {
+  Serial.printf("Recieved card data\n");
   data.trim();
   if (data.length() == 0)
     return 0;
@@ -72,13 +73,13 @@ int receive_cards(String data) {
   parse_card_list(player_data, player_cards);
   parse_card_list(dealer_data, dealer_cards);
 
-  Log.info("Player cards: %d, Dealer cards: %d", player_cards.size(),
-           dealer_cards.size());
+  Serial.printf("Player cards: %d, Dealer cards: %d", player_cards.size(),
+                dealer_cards.size());
   for (int card : player_cards) {
-    Log.info("Player card: %d (value: %d)", card, get_card_value(card));
+    Serial.printf("Player card: %d (value: %d)", card, get_card_value(card));
   }
   for (int card : dealer_cards) {
-    Log.info("Dealer card: %d (value: %d)", card, get_card_value(card));
+    Serial.printf("Dealer card: %d (value: %d)", card, get_card_value(card));
   }
 
   new_hand = true;
@@ -128,7 +129,7 @@ Action get_action_from_table(int player_total, bool same_card, bool useable_ace,
 
 void setup() {
   Serial.begin(9600);
-  lcd_init();
+  screen_init();
   Particle.function("receive_cards", receive_cards);
   display_scanning();
 }
@@ -166,7 +167,8 @@ void loop() {
 
     Action action = get_action_from_table(player_total, same_card, usable_ace,
                                           dealer_upcard, true_count);
-    display_action(action, player_total);
+    // display_action(action, player_total);
+    display_cards(action, player_cards, dealer_cards);
 
     Serial.printf(
         "Player total: %d, usable ace: %d, Dealer: %d -> Action: %d\n",
