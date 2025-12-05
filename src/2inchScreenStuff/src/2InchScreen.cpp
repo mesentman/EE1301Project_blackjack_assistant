@@ -58,15 +58,12 @@ String playerScount;
 // if surrender is true
 // Paint_DrawString_EN(17, 70, "SURRENDER", &Font24, BLACK, RED);
 
-
-
-
-void setup() {
-    SPI.begin();
-    SPI.beginTransaction(SPISettings(25000000, MSBFIRST, SPI_MODE0));
-    pinMode(DEV_CS_PIN, OUTPUT);
-    pinMode(DEV_DC_PIN, OUTPUT);
-    pinMode(DEV_RST_PIN, OUTPUT);
+void screen_init() {
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(25000000, MSBFIRST, SPI_MODE0));
+  pinMode(DEV_CS_PIN, OUTPUT);
+  pinMode(DEV_DC_PIN, OUTPUT);
+  pinMode(DEV_RST_PIN, OUTPUT);
 
   LCD_Init();
   Paint_NewImage(LCD_WIDTH, LCD_HEIGHT, ROTATE_0, WHITE);
@@ -122,45 +119,43 @@ void setup() {
 }
 
 bool runOnce = true;
-int dcs = 1; //dealer card start
-int pcs = 162; //player card start
-int CSW= 19; //card stack width
-void loop() {
-
+int dcs = 1;   // dealer card start
+int pcs = 162; // player card start
+int CSW = 19;  // card stack width
+void display_cards(Action action, std::vector<int> player_cards,
+                   std::vector<int> dealer_cards) {
   while (runOnce == false) {
 
+    // DEALER CARDS-----------
+    Paint_DrawCardUp(dcs, 152, 0, 1);           // Ace of Hearts
+    Paint_DrawCardUp(dcs + CSW, 152, 2, 1);     // Ace of Clubs
+    Paint_DrawCardUp(dcs + CSW * 2, 152, 1, 1); // Ace of Diamonds
+    Paint_DrawCardUp(dcs + CSW * 3, 152, 3, 1); // Ace of Spades
+    Paint_DrawCardUp(dcs + CSW * 4, 152, 2, 8); // Ace of Spades
+    Paint_DrawCardDown(dcs + CSW * 5, 152);     // waiting for player action
+    // DEALER CARDS-----------
 
+    // PLAYER CARDS-----------
+    Paint_DrawCardUp(pcs, 152, 0, 1);           // Ace of Hearts
+    Paint_DrawCardUp(pcs + CSW, 152, 2, 1);     // Ace of Clubs
+    Paint_DrawCardUp(pcs + CSW * 2, 152, 1, 1); // Ace of Diamonds
+    Paint_DrawCardUp(pcs + CSW * 3, 152, 3, 1); // Ace of Spades
+    Paint_DrawCardUp(pcs + CSW * 4, 152, 2, 8); // Ace of Spades
+    Paint_DrawCardDown(pcs + CSW * 5, 152);     // waiting for player action
+    // PLAYER CARDS-----------
 
+    // Draw the counts on the screen
+    ChangeToString(
+        dealerCount,
+        &dealerScount); // check references and pointers if not working
+    ChangeToString(
+        playerCount,
+        &playerScount); // check references and pointers if not working
+    Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK,
+                        WHITE); // Dealer count
+    Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK,
+                        WHITE); // Player count
 
-
-
-
-        //DEALER CARDS-----------
-        Paint_DrawCardUp(dcs, 152, 0, 1);           // Ace of Hearts
-        Paint_DrawCardUp(dcs + CSW, 152, 2, 1);     // Ace of Clubs
-        Paint_DrawCardUp(dcs + CSW*2, 152, 1, 1);   // Ace of Diamonds
-        Paint_DrawCardUp(dcs + CSW*3, 152, 3, 1);   // Ace of Spades
-        Paint_DrawCardUp(dcs + CSW*4, 152, 2, 8);   // Ace of Spades
-        Paint_DrawCardDown(dcs + CSW*5, 152);       // waiting for player action
-        //DEALER CARDS-----------
-
-        //PLAYER CARDS-----------
-        Paint_DrawCardUp(pcs, 152, 0, 1);           // Ace of Hearts
-        Paint_DrawCardUp(pcs + CSW, 152, 2, 1);     // Ace of Clubs
-        Paint_DrawCardUp(pcs + CSW*2, 152, 1, 1);   // Ace of Diamonds
-        Paint_DrawCardUp(pcs + CSW*3, 152, 3, 1);   // Ace of Spades
-        Paint_DrawCardUp(pcs + CSW*4, 152, 2, 8);   // Ace of Spades
-        Paint_DrawCardDown(pcs + CSW*5, 152);       // waiting for player action
-        //PLAYER CARDS-----------       
-        
-        
-
-        // Draw the counts on the screen
-        ChangeToString(dealerCount, &dealerScount); //check references and pointers if not working
-        ChangeToString(playerCount, &playerScount); //check references and pointers if not working
-        Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
-        Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
-        
     runOnce = true;
   }
 }
