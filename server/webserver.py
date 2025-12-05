@@ -71,10 +71,11 @@ def home():
         return render_template("index.html", ip=IP + ":" + str(WEBSOCKET_PORT))
 
 
-def run_server(tunnel: bool):
-    global using_tunnel
+def run_server(tunnel: bool, ip: str):
+    global using_tunnel, external_ip
     using_tunnel = tunnel
     if tunnel:
+        external_ip = ip.removeprefix("https://")
         APP.run(port=PORT, debug=False)
     else:
         APP.run(host="0.0.0.0", port=PORT, ssl_context=(CERT_NAME, KEY_NAME), debug=False)

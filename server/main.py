@@ -6,6 +6,7 @@ from threading import Thread
 import cv2
 import numpy as np
 import requests as r
+from tunnel import start_tunnel, stop_tunnel
 import webserver
 from card_classification import detect_cards
 from collections import Counter
@@ -131,14 +132,24 @@ def process_request(path, request_headers):
 
 def main():
     tunnel = False
-    if len(sys.argv) > 1 and sys.argv[1] == "--tunnel":
+    ws_url = ""
+    if len(sys.argv) > 2 and sys.argv[1] == "--tunnel":
+        cloudflared = sys.argv[2]
+        local_url = "127.0.0.1"
         tunnel = True
+        ws_url, ws_proc = start_tunnel(cloudflared, f"http://{local_url}:{WEBSOCKET_PORT}")
+        live_url, https_proc = start_tunnel(cloudflared, f"http://{local_url}:{webserver.PORT}")
         server = serve(receive, "127.0.0.1", WEBSOCKET_PORT, process_request=process_request)
     else:
         server = serve(receive, webserver.IP, WEBSOCKET_PORT, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
-    webserver.run_server(tunnel)
+    if tunnel:
+        print(f"Live server running at url: {live_url}")
+    webserver.run_server(tunnel, ws_url)
     server.shutdown()
+    if tunnel:
+        stop_tunnel(ws_proc)
+        stop_tunnel(https_proc)
 
 
 if __name__ == "__main__":
