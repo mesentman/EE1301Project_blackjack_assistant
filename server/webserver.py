@@ -6,6 +6,8 @@ from turtle import ht
 
 from flask import Flask, render_template
 
+from server.main import WEBSOCKET_PORT
+
 
 def _get_local_ip():
     """Detect the local network IP address."""
@@ -57,18 +59,24 @@ IP = _get_local_ip()
 CERT_NAME, KEY_NAME = _ensure_certificates(IP)
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile=CERT_NAME, keyfile=KEY_NAME)
+using_tunnel = False
 
 
 @APP.route("/")
 def home():
-    return render_template("index.html", ip=IP)
-
-
-def run_server(https: bool):
-    if https:
-        APP.run(host="0.0.0.0", port=PORT, ssl_context=(CERT_NAME, KEY_NAME), debug=False)
+    if using_tunnel:
+        return render_template("index.html", ip="your-tunnel-domain")
     else:
-        APP.run(host="0.0.0.0", port=PORT, debug=False)
+        return render_template("index.html", ip=IP + ":" + str(WEBSOCKET_PORT))
+
+
+def run_server(tunnel: bool):
+    global using_tunnel
+    using_tunnel = tunnel
+    if tunnel:
+        APP.run(port=PORT, debug=False)
+    else:
+        APP.run(host="0.0.0.0", port=PORT, ssl_context=(CERT_NAME, KEY_NAME), debug=False)
 
 
 if __name__ == "__main__":

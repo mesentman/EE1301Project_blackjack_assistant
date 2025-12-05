@@ -20,6 +20,7 @@ BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
 PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
+WEBSOCKET_PORT: int = 8001
 
 HAND_HISTORY_SIZE: int = 15
 MIN_MODE_COUNT: int = 10
@@ -125,22 +126,18 @@ def run_websocket(server: Server):
 
 
 def process_request(path, request_headers):
-    headers = [
-        ("Content-Type", "text/plain"),
-        ("Content-Length", "2"),
-    ]
-    return (200, headers, b"OK")
+    return None
 
 
 def main():
-    https = True
-    if len(sys.argv) > 1 and sys.argv[1] == "--http":
-        https = False
-        server = serve(receive, "localhost", 5500, process_request=process_request)
+    tunnel = False
+    if len(sys.argv) > 1 and sys.argv[1] == "--tunnel":
+        tunnel = True
+        server = serve(receive, "127.0.0.1", WEBSOCKET_PORT, process_request=process_request)
     else:
-        server = serve(receive, webserver.IP, 8001, ssl=webserver.ssl_context)
+        server = serve(receive, webserver.IP, WEBSOCKET_PORT, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
-    webserver.run_server(https)
+    webserver.run_server(tunnel)
     server.shutdown()
 
 
