@@ -3,7 +3,6 @@ import os
 import sys
 from threading import Thread
 
-import cv2
 import numpy as np
 import requests as r
 from tunnel import start_tunnel, stop_tunnel
@@ -92,8 +91,6 @@ def receive(websocket):
             if not result:
                 continue
             dealer_cards, player_cards, display = result
-            cv2.imshow("Live Image", display)
-            cv2.waitKey(1)
 
             print(f"Detected - Dealer: {dealer_cards}, Player: {player_cards}")
             hand_key = hand_to_key(dealer_cards, player_cards)
