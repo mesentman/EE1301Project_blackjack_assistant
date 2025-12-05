@@ -92,6 +92,7 @@ def receive(websocket):
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)
 
+            print(f"Detected - Dealer: {dealer_cards}, Player: {player_cards}")
             hand_key = hand_to_key(dealer_cards, player_cards)
             hand_history.append(hand_key)
             if len(hand_history) > HAND_HISTORY_SIZE:
@@ -113,6 +114,7 @@ def receive(websocket):
                 data={"arg": formatted},
             )
             print(resp.text)
+            print(resp.url)
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
