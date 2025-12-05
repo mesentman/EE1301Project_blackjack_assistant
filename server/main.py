@@ -1,5 +1,6 @@
 import io
-import ssl
+import os
+import sys
 from threading import Thread
 
 import cv2
@@ -7,25 +8,78 @@ import numpy as np
 import requests as r
 import webserver
 from card_classification import detect_cards
+from collections import Counter
+from dotenv import load_dotenv
 from PIL import Image
 from websockets import ConnectionClosedError
 from websockets.sync.server import Server, serve
 
+load_dotenv()
+
 BASE_URL: str = "https://api.particle.io/v1/devices/"
-DEVICE_ID: str = ""
-PARTICLE_FUNCTION: str = ""
-ACCESS_TOKEN: str = ""  # Don't want to actually store this here
+DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
+PARTICLE_FUNCTION: str = "receive_cards"
+ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
+
+HAND_HISTORY_SIZE: int = 15
+MIN_MODE_COUNT: int = 10
+MIN_CARDS_DETECTED: int = 1
+
+
+SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
+# fmt: off
+RANK_MAP: dict[str, int] = {
+    "A": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6,
+    "8": 7, "9": 8, "10": 9, "J": 10, "Q": 11, "K": 12
+}
+# fmt: on
+
+
+def card_to_int(card: str) -> int:
+    suit = card[-1]
+    rank = card[:-1]
+    return SUIT_MAP[suit] * 13 + RANK_MAP[rank]
+
+
+def format_cards_for_particle(dealer_cards: dict[str, int], player_cards: dict[str, int]) -> str:
+    player_list = [card_to_int(c) for c in player_cards.keys()]
+    dealer_list = [card_to_int(c) for c in dealer_cards.keys()]
+    player_str = ",".join(str(c) for c in player_list)
+    dealer_str = ",".join(str(c) for c in dealer_list)
+    return f"{player_str}|{dealer_str}"
+
+
+def hand_to_key(dealer_cards: dict[str, int], player_cards: dict[str, int]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    return (tuple(sorted(dealer_cards.keys())), tuple(sorted(player_cards.keys())))
+
+
+def get_stable_hand(
+    hand_history: list[tuple[tuple[str, ...], tuple[str, ...]]],
+) -> tuple[tuple[str, ...], tuple[str, ...]] | None:
+    if len(hand_history) < HAND_HISTORY_SIZE:
+        return None
+    counter = Counter(hand_history)
+    mode, count = counter.most_common(1)[0]
+    if count < MIN_MODE_COUNT:
+        return None
+    total_cards = len(mode[0]) + len(mode[1])
+    if total_cards < MIN_CARDS_DETECTED:
+        return None
+    return mode
 
 
 def receive(websocket):
     prev_timestamp = None
+    hand_history: list[tuple[tuple[str, ...], tuple[str, ...]]] = []
+    last_sent_hand: tuple[tuple[str, ...], tuple[str, ...]] | None = None
+    print("WebSocket Connection Established.")
     try:
         for message in websocket:
             timestamp_ms = int.from_bytes(message[:8])
             if not prev_timestamp:
                 prev_timestamp = timestamp_ms
             # Artificial Frame Limiting to ~8 FPS
-            if timestamp_ms - prev_timestamp < 125:
+            if timestamp_ms - prev_timestamp < 200:
                 continue
             prev_timestamp = timestamp_ms
             data = message[8:]
@@ -34,15 +88,31 @@ def receive(websocket):
             result = detect_cards(frame)
             if not result:
                 continue
-            ret, display = result
-            print(ret)
+            dealer_cards, player_cards, display = result
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)
-            # r.post(
-            #     url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
-            #     headers={"Authorization": "Bearer " + ACCESS_TOKEN},
-            #     data={"arg": ret},
-            # )
+
+            hand_key = hand_to_key(dealer_cards, player_cards)
+            hand_history.append(hand_key)
+            if len(hand_history) > HAND_HISTORY_SIZE:
+                hand_history.pop(0)
+
+            stable_hand = get_stable_hand(hand_history)
+            if not stable_hand or stable_hand == last_sent_hand:
+                continue
+
+            last_sent_hand = stable_hand
+            stable_dealer = {card: 1 for card in stable_hand[0]}
+            stable_player = {card: 1 for card in stable_hand[1]}
+            print(f"Dealer: {stable_dealer}, Player: {stable_player}")
+            formatted = format_cards_for_particle(stable_dealer, stable_player)
+            print(formatted)
+            resp = r.post(
+                url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
+                headers={"Authorization": "Bearer " + ACCESS_TOKEN},
+                data={"arg": formatted},
+            )
+            print(resp.text)
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
@@ -52,12 +122,23 @@ def run_websocket(server: Server):
         server.serve_forever()
 
 
+def process_request(path, request_headers):
+    headers = [
+        ("Content-Type", "text/plain"),
+        ("Content-Length", "2"),
+    ]
+    return (200, headers, b"OK")
+
+
 def main():
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    ssl_context.load_cert_chain(certfile=webserver.CERT_NAME, keyfile=webserver.KEY_NAME)
-    server = serve(receive, webserver.IP, 8001, ssl=ssl_context)
+    https = True
+    if len(sys.argv) > 1 and sys.argv[1] == "--http":
+        https = False
+        server = serve(receive, "localhost", 5500, process_request=process_request)
+    else:
+        server = serve(receive, webserver.IP, 8001, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
-    webserver.run_server()
+    webserver.run_server(https)
     server.shutdown()
 
 

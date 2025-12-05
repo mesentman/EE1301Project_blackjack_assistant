@@ -16,5 +16,10 @@ will be faster
 Required Functionality:
 Improve accuracy of model
     - Train model for longer
-Send data over to Photon (Makes the project actually work)
-    - Using Particle function with output from YOLO model
+    - Find pre trained models that are better
+get screen working, 
+try and run on server for speed (tunneling, need to modify WSS code a tad)
+Assigning cards:
+Say out of the last 30 hands detected the mode was detected >= 15 times and it contains >3 cards, we're good to go
+Split screen into two regions, one is dealer's side and the other is player's side
+Currently I'm ignoring >1 of the same card but that could be another check to throw out a result
