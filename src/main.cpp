@@ -129,7 +129,7 @@ Action get_action_from_table(int player_total, bool same_card, bool useable_ace,
 
 void setup() {
   Serial.begin(9600);
-  lcd_init();
+  screen_init();
   Particle.function("receive_cards", receive_cards);
   display_scanning();
 }
@@ -168,6 +168,7 @@ void loop() {
     Action action = get_action_from_table(player_total, same_card, usable_ace,
                                           dealer_upcard, true_count);
     // display_action(action, player_total);
+    display_cards(action, player_cards, dealer_cards);
 
     Serial.printf(
         "Player total: %d, usable ace: %d, Dealer: %d -> Action: %d\n",
