@@ -36,14 +36,11 @@ def card_to_int(card: str) -> int:
     return SUIT_MAP[suit] * 13 + RANK_MAP[rank]
 
 
-def format_cards_for_particle(cards: dict[str, int]) -> str:
-    # TODO:  This assumes half and half split between player and dealer
-    card_list = [card_to_int(c) for c in cards.keys()]
-    mid = len(card_list) // 2
-    player_cards = card_list[:mid]
-    dealer_cards = card_list[mid:]
-    player_str = ",".join(str(c) for c in player_cards)
-    dealer_str = ",".join(str(c) for c in dealer_cards)
+def format_cards_for_particle(dealer_cards: dict[str, int], player_cards: dict[str, int]) -> str:
+    player_list = [card_to_int(c) for c in player_cards.keys()]
+    dealer_list = [card_to_int(c) for c in dealer_cards.keys()]
+    player_str = ",".join(str(c) for c in player_list)
+    dealer_str = ",".join(str(c) for c in dealer_list)
     return f"{player_str}|{dealer_str}"
 
 
@@ -56,7 +53,7 @@ def receive(websocket):
             if not prev_timestamp:
                 prev_timestamp = timestamp_ms
             # Artificial Frame Limiting to ~8 FPS
-            if timestamp_ms - prev_timestamp < 125:
+            if timestamp_ms - prev_timestamp < 200:
                 continue
             prev_timestamp = timestamp_ms
             data = message[8:]
@@ -65,13 +62,13 @@ def receive(websocket):
             result = detect_cards(frame)
             if not result:
                 continue
-            cards, display = result
-            print(cards)
-            formatted = format_cards_for_particle(cards)
+            dealer_cards, player_cards, display = result
+            print(f"Dealer: {dealer_cards}, Player: {player_cards}")
+            formatted = format_cards_for_particle(dealer_cards, player_cards)
             print(formatted)
             cv2.imshow("Live Image", display)
             cv2.waitKey(1)
-            if cards:
+            if dealer_cards or player_cards:
                 r.post(
                     url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
                     headers={"Authorization": "Bearer " + ACCESS_TOKEN},

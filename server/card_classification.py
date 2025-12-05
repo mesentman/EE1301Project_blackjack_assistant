@@ -13,17 +13,32 @@ def create_model(data: str):
     new_model.val()
 
 
-def detect_cards(frame) -> tuple[dict[str, int], np.ndarray] | None:
+def detect_cards(frame) -> tuple[dict[str, int], dict[str, int], np.ndarray] | None:
     results = MODEL.predict(frame, verbose=False, conf=MIN_CONFIDENCE)
     if not results:
         return
     result = results[0]
     if not result.boxes:
         return
+
+    frame_height = frame.shape[0]
+    midpoint = frame_height / 2
     types = result.names
-    counts = result.boxes.cls.int().bincount()
-    ret = {types.get(cid): min(count.item(), 1) for cid, count in enumerate(counts) if count > 0}
-    return (ret, result.plot())
+
+    dealer_cards: dict[str, int] = {}
+    player_cards: dict[str, int] = {}
+
+    for box, cls in zip(result.boxes.xyxy, result.boxes.cls):
+        y_center = (box[1] + box[3]) / 2
+        card_name = types.get(int(cls.item()))
+        if card_name in dealer_cards or card_name in player_cards:
+            continue
+        if y_center < midpoint:
+            dealer_cards[card_name] = 1
+        else:
+            player_cards[card_name] = 1
+
+    return (dealer_cards, player_cards, result.plot())
 
 
 if __name__ == "__main__":
