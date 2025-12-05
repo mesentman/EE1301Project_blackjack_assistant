@@ -26,7 +26,7 @@ WEBSOCKET_PORT: int = 8001
 HAND_HISTORY_SIZE: int = 15
 MIN_MODE_COUNT: int = 10
 MIN_CARDS_DETECTED: int = 1
-MAX_FPS = 5
+MAX_FPS = 30
 
 
 SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
