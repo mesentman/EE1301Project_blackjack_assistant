@@ -25,7 +25,7 @@ WEBSOCKET_PORT: int = 8001
 
 HAND_HISTORY_SIZE: int = 60
 MIN_MODE_COUNT: int = 20
-MIN_CARDS_DETECTED: int = 1  # TODO: This should be raised to 3
+MIN_CARDS_DETECTED: int = 3
 MAX_FPS = 30
 
 
@@ -42,6 +42,15 @@ def card_to_int(card: str) -> int:
     suit = card[-1]
     rank = card[:-1]
     return SUIT_MAP[suit] * 13 + RANK_MAP[rank]
+
+
+def send_to_photon(formatted: str) -> None:
+    resp = r.post(
+        url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
+        headers={"Authorization": "Bearer " + ACCESS_TOKEN},
+        data={"arg": formatted},
+    )
+    print(resp.text)
 
 
 def format_cards_for_particle(dealer_cards: dict[str, int], player_cards: dict[str, int]) -> str:
@@ -111,12 +120,7 @@ def receive(websocket: ServerConnection):
             print(f"Dealer: {stable_dealer}, Player: {stable_player}")
             formatted = format_cards_for_particle(stable_dealer, stable_player)
             print(formatted)
-            resp = r.post(
-                url=BASE_URL + DEVICE_ID + "/" + PARTICLE_FUNCTION,
-                headers={"Authorization": "Bearer " + ACCESS_TOKEN},
-                data={"arg": formatted},
-            )
-            print(resp.text)
+            Thread(target=send_to_photon, args=(formatted,), daemon=True).start()
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 

@@ -1,8 +1,8 @@
+#include "2InchScreen.hpp"
 #include "Particle.h"
 #include "blackjack.hpp"
 #include "screen.hpp"
 #include "win_rate_table.h"
-#include "2InchScreen.hpp"
 #include <vector>
 
 SYSTEM_MODE(AUTOMATIC);
@@ -136,7 +136,7 @@ TableReturn get_action_from_table(int player_total, bool same_card,
     action = DOUBLE_DOWN;
   }
   return TableReturn{action, winrate};
-} 
+}
 
 void setup() {
   Serial.begin(9600);
@@ -180,6 +180,7 @@ void loop() {
                                             dealer_upcard, true_count);
     Action action = ret.action;
     int winrate = ret.winrate;
+    Serial.printf("Winrate: %d\n", winrate);
     // display_action(action, player_total);
     display_cards(action, player_cards, dealer_cards, true_count, winrate);
 
