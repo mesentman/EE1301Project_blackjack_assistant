@@ -25,7 +25,7 @@ WEBSOCKET_PORT: int = 8001
 
 HAND_HISTORY_SIZE: int = 15
 MIN_MODE_COUNT: int = 10
-MIN_CARDS_DETECTED: int = 1
+MIN_CARDS_DETECTED: int = 1  # TODO: This should be raised to 3
 MAX_FPS = 30
 
 
