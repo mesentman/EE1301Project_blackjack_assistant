@@ -6,8 +6,8 @@ import torch.optim as optim
 # Local imports
 from model import NoisyDuelingMLP
 from replay_buffer import PrioritizedReplayBuffer, ReplayBuffer
-from enivroment import make_shoe, shoe_draw, play_fixed_player, play_single_hand_dqn, PLAYER_TYPES
-from enivroment import encode_state_vec, true_count_bin_from_running
+from enivronment import make_shoe, shoe_draw, play_fixed_player, play_single_hand_dqn, PLAYER_TYPES
+from enivronment import encode_state_vec, true_count_bin_from_running
 from utils import export_policy
 from config import *
 

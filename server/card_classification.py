@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from ultralytics import YOLO
 
-MODEL = YOLO("runs/detect/train2/weights/best.pt")
+MODEL = YOLO("runs/detect/train2/weights/best.pt")  # TODO: Perhaps a better model could be used
 MIN_CONFIDENCE = 0.5
 
 
@@ -27,7 +27,7 @@ def detect_cards(frame) -> tuple[dict[str, int], dict[str, int], np.ndarray] | N
 
     dealer_cards: dict[str, int] = {}
     player_cards: dict[str, int] = {}
-
+    # TODO: Maybe ignore if it detects more than 2 of the same card?
     for box, cls in zip(result.boxes.xyxy, result.boxes.cls):
         y_center = (box[1] + box[3]) / 2
         card_name = types.get(int(cls.item()))
