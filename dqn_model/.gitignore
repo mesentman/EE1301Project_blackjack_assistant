@@ -1,0 +1,49 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.npy
+*.so
+
+# Virtual Environments
+venv/
+env/
+.venv/
+ENV/
+
+# ========================
+# C++ & Build Artifacts
+# ========================
+# Ignore compiled object files and executables
+*.o
+*.obj
+*.exe
+*.dll
+*.dylib
+*.out
+*.app
+
+# Specific executables generated in your Policy_table_EV folder
+Policy_table_EV/blackjack_sim
+Policy_table_EV/gen_table
+
+# ========================
+# IDE & System Files
+# ========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ========================
+# Project Specific
+# ========================
+# Ignore the raw export folder if you only want to keep the final header files
+# exports/
+
+# (Optional) If your model checkpoint files (.pth) are too large (>100MB)
+# uncomment the line below to ignore them:
+# *.pth
