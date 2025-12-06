@@ -3,7 +3,6 @@ import os
 import sys
 from threading import Thread
 
-import cv2
 import numpy as np
 import requests as r
 from tunnel import start_tunnel, stop_tunnel
@@ -21,12 +20,13 @@ BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
 PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
+BITLY_TOKEN: str = os.getenv("BITLY_ACCESS_TOKEN", "")
 WEBSOCKET_PORT: int = 8001
 
 HAND_HISTORY_SIZE: int = 15
 MIN_MODE_COUNT: int = 10
 MIN_CARDS_DETECTED: int = 1
-MAX_FPS = 5
+MAX_FPS = 30
 
 
 SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
@@ -92,8 +92,6 @@ def receive(websocket):
             if not result:
                 continue
             dealer_cards, player_cards, display = result
-            cv2.imshow("Live Image", display)
-            cv2.waitKey(1)
 
             print(f"Detected - Dealer: {dealer_cards}, Player: {player_cards}")
             hand_key = hand_to_key(dealer_cards, player_cards)
@@ -131,6 +129,14 @@ def process_request(path, request_headers):
     return None
 
 
+def shorten_url(long_url: str) -> str:
+    api_url = "https://api-ssl.bitly.com/v4/shorten"
+    headers = {"Authorization": f"Bearer {BITLY_TOKEN}", "Content-Type": "application/json"}
+    data = {"long_url": long_url}
+    response = r.post(api_url, json=data, headers=headers)
+    return response.json().get("link")
+
+
 def main():
     tunnel = False
     ws_url = ""
@@ -145,7 +151,7 @@ def main():
         server = serve(receive, webserver.IP, WEBSOCKET_PORT, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
     if tunnel:
-        print(f"Live server running at url: {live_url}")
+        print(f"Live server running at url: {shorten_url(live_url)}")
     webserver.run_server(tunnel, ws_url)
     server.shutdown()
     if tunnel:
