@@ -214,6 +214,10 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         //        draw dealer card
         Paint_DrawCardUp(dcs + (CSW * dealCardPositionDealer), 152, suitDealer, valDealer);
 
+        if (dealCardPositionDealer == 0) {    //draw dealer  card down when only one (card value) is showing from video
+          Paint_DrawCardDown(dcs + CSW, 152);
+        }
+
         //        draw dealer count
         switch (valDealer) {
         case 1:
