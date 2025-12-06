@@ -46,7 +46,7 @@
     <video id="cameraStream" autoplay playsinline></video>
     <button id="toggleButton">Toggle Camera</button>
     <script>
-      const socket = new WebSocket("wss://{{ip}}:8001");
+      const socket = new WebSocket("wss://{{ip}}");
       const video = document.getElementById("cameraStream");
       const toggleButton = document.getElementById("toggleButton");
       const canvas = document.createElement('canvas');

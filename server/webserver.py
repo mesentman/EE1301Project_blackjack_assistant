@@ -1,10 +1,10 @@
 import os
 import socket
-import ssl
 import subprocess
-from turtle import ht
 
 from flask import Flask, render_template
+
+from main import WEBSOCKET_PORT
 
 
 def _get_local_ip():
@@ -54,21 +54,29 @@ def _ensure_certificates(ip):
 APP = Flask(__name__)
 PORT = 5500
 IP = _get_local_ip()
-CERT_NAME, KEY_NAME = _ensure_certificates(IP)
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_context.load_cert_chain(certfile=CERT_NAME, keyfile=KEY_NAME)
+# ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+# ssl_context.load_cert_chain(certfile=CERT_NAME, keyfile=KEY_NAME)
+using_tunnel = False
+external_ip = "asdf.trycloudflare.com"
 
 
 @APP.route("/")
 def home():
-    return render_template("index.html", ip=IP)
-
-
-def run_server(https: bool):
-    if https:
-        APP.run(host="0.0.0.0", port=PORT, ssl_context=(CERT_NAME, KEY_NAME), debug=False)
+    if using_tunnel:
+        return render_template("index.html", ip=external_ip)
     else:
-        APP.run(host="0.0.0.0", port=PORT, debug=False)
+        return render_template("index.html", ip=IP + ":" + str(WEBSOCKET_PORT))
+
+
+def run_server(tunnel: bool, ip: str):
+    global using_tunnel, external_ip
+    using_tunnel = tunnel
+    if tunnel:
+        external_ip = ip.removeprefix("https://")
+        APP.run(port=PORT, debug=False)
+    else:
+        CERT_NAME, KEY_NAME = _ensure_certificates(IP)
+        APP.run(host="0.0.0.0", port=PORT, ssl_context=(CERT_NAME, KEY_NAME), debug=False)
 
 
 if __name__ == "__main__":
