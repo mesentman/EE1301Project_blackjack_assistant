@@ -19,12 +19,15 @@
         color: #0078d7;
         margin-bottom: 20px;
       }
-      video {
+      video, #processedImage {
         width: 90%;
         max-width: 480px;
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         background: black;
+      }
+      #processedImage {
+        margin-top: 20px;
       }
       button {
         margin-top: 20px;
@@ -45,13 +48,22 @@
     <h1>Live Camera View</h1>
     <video id="cameraStream" autoplay playsinline></video>
     <button id="toggleButton">Toggle Camera</button>
+    <img id="processedImage" alt="Processed Image" />
     <script>
       const socket = new WebSocket("wss://{{ip}}");
       const video = document.getElementById("cameraStream");
       const toggleButton = document.getElementById("toggleButton");
+      const processedImage = document.getElementById("processedImage");
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       let stream;
+
+      socket.binaryType = "arraybuffer";
+      socket.onmessage = (event) => {
+        const blob = new Blob([event.data], { type: "image/jpeg" });
+        const url = URL.createObjectURL(blob);
+        processedImage.src = url;
+      };
 
       async function startCamera() {
         try {
