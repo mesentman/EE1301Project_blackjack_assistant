@@ -1,9 +1,9 @@
-#include "fonts.h" // make sure your font file is included
 #include "GUI_Paint.h"
 #include "LCD_Driver.h"
 #include "Paint_DrawCard.h" //personal header file for all the card drawing functions
 #include "Particle.h"
 #include "blackjack.hpp"
+#include "fonts.h" // make sure your font file is included
 // Screen Pinout
 //   VCC -> 3V3
 //   GND -> GND
@@ -37,8 +37,6 @@ SYSTEM_THREAD(ENABLED);
 #define QUEEN 12
 #define KING 13
 //******************************************************************************
-
-
 
 // if hit is true
 // Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);  //centered
@@ -115,7 +113,6 @@ void screen_init() {
   // setup----------------------------------------------------------------
 }
 
-
 int dealCardPositionDealer;
 int suitDealer;
 int valDealer;
@@ -124,7 +121,8 @@ int dealCardPositionPlayer;
 int suitPlayer;
 int valPlayer;
 
-void display_cards(Action action, std::vector<int> player_cards, std::vector<int> dealer_cards) {
+void display_cards(Action action, std::vector<int> player_cards,
+                   std::vector<int> dealer_cards, int true_count, int winrate) {
   bool runOnce = true;
   int dcs = 1;   // dealer card start
   int pcs = 162; // player card start
@@ -136,28 +134,37 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
   String playerScount;
   while (runOnce == false) {
 
-    //output dealers first
-    //then players
-    //then action
+    // output dealers first
+    // then players
+    // then action
 
     //-------------- DEALER CARDS -----------------
     if (dealer_cards.size() >= 0) {
       dealCardPositionDealer = 0;
       for (int i = 0; i < dealer_cards.size(); i++) {
-      
-      suitDealer = 0;
-      valDealer = (dealer_cards.at(i) % 13) + 1;
 
-      if ((dealer_cards.at(i) / 13) == 1) { suitDealer = 0;} //Brocks int HEART to my int HEART
-      if ((dealer_cards.at(i) / 13) == 2) { suitDealer = 1;} //Brocks int DIAMOND to my int DIAMOND
-      if ((dealer_cards.at(i) / 13) == 3) { suitDealer = 2;} //Brocks int CLUB to my int CLUB
-      if ((dealer_cards.at(i) / 13) == 0) { suitDealer = 3;} //Brocks int SPADE to my int SPADE
+        suitDealer = 0;
+        valDealer = (dealer_cards.at(i) % 13) + 1;
 
-      //        draw dealer card
-      Paint_DrawCardUp(dcs + (CSW*dealCardPositionDealer), 152, suitDealer, valDealer);
+        if ((dealer_cards.at(i) / 13) == 1) {
+          suitDealer = 0;
+        } // Brocks int HEART to my int HEART
+        if ((dealer_cards.at(i) / 13) == 2) {
+          suitDealer = 1;
+        } // Brocks int DIAMOND to my int DIAMOND
+        if ((dealer_cards.at(i) / 13) == 3) {
+          suitDealer = 2;
+        } // Brocks int CLUB to my int CLUB
+        if ((dealer_cards.at(i) / 13) == 0) {
+          suitDealer = 3;
+        } // Brocks int SPADE to my int SPADE
 
-      //        draw dealer count
-      switch (valDealer) {
+        //        draw dealer card
+        Paint_DrawCardUp(dcs + (CSW * dealCardPositionDealer), 152, suitDealer,
+                         valDealer);
+
+        //        draw dealer count
+        switch (valDealer) {
         case 1:
           valDealer = 11;
           break;
@@ -170,41 +177,49 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         case 13:
           valDealer = 10;
           break;
-      }
+        }
 
-      dealerCount = dealerCount + valDealer;
-      if ((dealerCount > 21) && valDealer == 11) {
-        dealerCount = dealerCount - 10;
-      }
-      ChangeToString(dealerCount, &dealerScount); // check references and pointers if not working
-      Paint_DrawString_EN(162, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
-      
+        dealerCount = dealerCount + valDealer;
+        if ((dealerCount > 21) && valDealer == 11) {
+          dealerCount = dealerCount - 10;
+        }
+        ChangeToString(
+            dealerCount,
+            &dealerScount); // check references and pointers if not working
+        Paint_DrawString_EN(162, 130, dealerScount, &Font20, BLACK,
+                            WHITE); // Dealer count
 
-      dealCardPositionDealer++;
-    }
+        dealCardPositionDealer++;
+      }
     }
     //-------------- DEALER CARDS -----------------
-
-
-
 
     //-------------- PLAYER CARDS -----------------
     if (player_cards.size() >= 0) {
       int dealCardPositionPlayer = 0;
       for (int i = 0; i < player_cards.size(); i++) {
 
-      int valPlayer = (player_cards.at(i) % 13) + 1;
+        int valPlayer = (player_cards.at(i) % 13) + 1;
 
-      if ((player_cards.at(i) / 13) == 1) { suitPlayer = 0;} //Brocks int HEART to my int HEART
-      if ((player_cards.at(i) / 13) == 2) { suitPlayer = 1;} //Brocks int DIAMOND to my int DIAMOND
-      if ((player_cards.at(i) / 13) == 3) { suitPlayer = 2;} //Brocks int CLUB to my int CLUB
-      if ((player_cards.at(i) / 13) == 0) { suitPlayer = 3;} //Brocks int SPADE to my int SPADE
+        if ((player_cards.at(i) / 13) == 1) {
+          suitPlayer = 0;
+        } // Brocks int HEART to my int HEART
+        if ((player_cards.at(i) / 13) == 2) {
+          suitPlayer = 1;
+        } // Brocks int DIAMOND to my int DIAMOND
+        if ((player_cards.at(i) / 13) == 3) {
+          suitPlayer = 2;
+        } // Brocks int CLUB to my int CLUB
+        if ((player_cards.at(i) / 13) == 0) {
+          suitPlayer = 3;
+        } // Brocks int SPADE to my int SPADE
 
-      //        draw player card
-      Paint_DrawCardUp(pcs + (CSW*dealCardPositionPlayer), 152, suitPlayer, valPlayer);
-      
-      //        draw player count
-      switch (valPlayer) {
+        //        draw player card
+        Paint_DrawCardUp(pcs + (CSW * dealCardPositionPlayer), 152, suitPlayer,
+                         valPlayer);
+
+        //        draw player count
+        switch (valPlayer) {
         case 1:
           valPlayer = 11;
           break;
@@ -217,64 +232,56 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         case 13:
           valPlayer = 10;
           break;
-      }
+        }
 
-      playerCount = playerCount + valPlayer;
-      if ((playerCount > 21) && valPlayer == 11) {
-        playerCount = playerCount - 10;
-      }
-      ChangeToString(playerCount, &playerScount); // check references and pointers if not working
-      Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
+        playerCount = playerCount + valPlayer;
+        if ((playerCount > 21) && valPlayer == 11) {
+          playerCount = playerCount - 10;
+        }
+        ChangeToString(
+            playerCount,
+            &playerScount); // check references and pointers if not working
+        Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK,
+                            WHITE); // Player count
 
-      dealCardPositionPlayer++;
-    }
+        dealCardPositionPlayer++;
+      }
     }
     //-------------- PLAYER CARDS -----------------
 
-
-
-
-
-
-
     //----------------- ACTION --------------------
-    if ((action == HIT) || (action == STAND) || (action == DOUBLE_DOWN) || (action == SPLIT)) {
+    if ((action == HIT) || (action == STAND) || (action == DOUBLE_DOWN) ||
+        (action == SPLIT)) {
 
       switch (action) {
-        case HIT:
-            Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);
-            break;
-        case STAND:
-            Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
-            break;
-        case DOUBLE_DOWN:
-            Paint_DrawString_EN(17, 70, "         ", &Font24, BLACK, RED);//clear previous area because double is offset from others to be centered on screen
-            Paint_DrawString_EN(25, 70, " DOUBLE  ", &Font24, BLACK, RED);
-            break;
-        case SPLIT:
-            Paint_DrawString_EN(17, 70, "  SPLIT  ", &Font24, BLACK, RED);
-            break;
+      case HIT:
+        Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);
+        break;
+      case STAND:
+        Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
+        break;
+      case DOUBLE_DOWN:
+        Paint_DrawString_EN(17, 70, "         ", &Font24, BLACK,
+                            RED); // clear previous area because double is
+                                  // offset from others to be centered on screen
+        Paint_DrawString_EN(25, 70, " DOUBLE  ", &Font24, BLACK, RED);
+        break;
+      case SPLIT:
+        Paint_DrawString_EN(17, 70, "  SPLIT  ", &Font24, BLACK, RED);
+        break;
       }
-    }     else {Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED);}
+    } else {
+      Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED);
+    }
     //----------------- ACTION --------------------
 
-
-
-
-
-
-
-
-
-
-
-
-
     // Draw the counts on the screen
-    //ChangeToString(dealerCount, &dealerScount); // check references and pointers if not working
-    //ChangeToString(playerCount, &playerScount); // check references and pointers if not working
-    //Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
-    //Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
+    // ChangeToString(dealerCount, &dealerScount); // check references and
+    // pointers if not working ChangeToString(playerCount, &playerScount); //
+    // check references and pointers if not working Paint_DrawString_EN(130,
+    // 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
+    // Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); //
+    // Player count
 
     runOnce = true;
   }
