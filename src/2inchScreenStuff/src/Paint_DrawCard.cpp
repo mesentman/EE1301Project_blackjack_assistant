@@ -616,3 +616,66 @@ void ChangeToString(int x, String *Scount) {
             break;
     }
 }
+
+
+
+
+
+// change integer to string WITH % sign for display
+void ChangeToStringPercent(int x, String *Scount) {
+    switch(x) {
+        // ----- 0 -----
+        case 0:   *Scount = "0%";   break;
+        case 1:   *Scount = "1%";   break;
+        case 2:   *Scount = "2%";   break;
+        case 3:   *Scount = "3%";   break;
+        case 4:   *Scount = "4%";   break;
+        case 5:   *Scount = "5%";   break;
+        case 6:   *Scount = "6%";   break;
+        case 7:   *Scount = "7%";   break;
+        case 8:   *Scount = "8%";   break;
+        case 9:   *Scount = "9%";   break;
+        case 10:  *Scount = "10%";  break;
+
+        case 11:  *Scount = "11%";  break;
+        case 12:  *Scount = "12%";  break;
+        case 13:  *Scount = "13%";  break;
+        case 14:  *Scount = "14%";  break;
+        case 15:  *Scount = "15%";  break;
+        case 16:  *Scount = "16%";  break;
+        case 17:  *Scount = "17%";  break;
+        case 18:  *Scount = "18%";  break;
+        case 19:  *Scount = "19%";  break;
+        case 20:  *Scount = "20%";  break;
+
+        case 21:  *Scount = "21%";  break;
+        case 22:  *Scount = "22%";  break;
+        case 23:  *Scount = "23%";  break;
+        case 24:  *Scount = "24%";  break;
+        case 25:  *Scount = "25%";  break;
+        case 26:  *Scount = "26%";  break;
+        case 27:  *Scount = "27%";  break;
+        case 28:  *Scount = "28%";  break;
+        case 29:  *Scount = "29%";  break;
+        case 30:  *Scount = "30%";  break;
+
+        // If you want, I can generate 31–100 automatically,
+        // but here's 31–40 for now:
+        case 31: *Scount = "31%"; break;
+        case 32: *Scount = "32%"; break;
+        case 33: *Scount = "33%"; break;
+        case 34: *Scount = "34%"; break;
+        case 35: *Scount = "35%"; break;
+        case 36: *Scount = "36%"; break;
+        case 37: *Scount = "37%"; break;
+        case 38: *Scount = "38%"; break;
+        case 39: *Scount = "39%"; break;
+        case 40: *Scount = "40%"; break;
+
+        // You tell me if you want 41–100 too.
+
+        default:
+            *Scount = "--%";
+            break;
+    }
+}

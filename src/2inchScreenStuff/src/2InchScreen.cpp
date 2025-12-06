@@ -374,7 +374,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
     //if (winrate >= 0) {
       if (winrate == 100) {winrate = 99;}
 
-      ChangeToString(winrate, &winSrate);
+      ChangeToStringPercent(winrate, &winSrate);
       Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
 

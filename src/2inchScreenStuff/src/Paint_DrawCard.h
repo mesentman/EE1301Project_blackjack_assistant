@@ -10,6 +10,7 @@
 
 //card counts functions
 void ChangeToString(int x, String *Scount);
+void ChangeToStringPercent(int x, String *Scount);
 
 //card symbols
 void Paint_DrawDiamond(UWORD x, UWORD y, UWORD size, UWORD color);
