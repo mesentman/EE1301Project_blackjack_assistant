@@ -172,6 +172,9 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
 
 
     //-------------- CLEAR TABLE -----------------
+    Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED);
+    Paint_DrawString_EN(225, 34, "--", &Font24, BLACK, RED); 
+    Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);
     Paint_DrawRectangle(1, 152, 158, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawRectangle(162, 152, 320, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawString_EN(130, 130, "--", &Font20, BLACK, WHITE);
