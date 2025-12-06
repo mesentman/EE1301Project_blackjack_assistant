@@ -64,7 +64,7 @@ void screen_init() {
 
   LCD_Init();
   Paint_NewImage(LCD_WIDTH, LCD_HEIGHT, ROTATE_0, WHITE);
-  Paint_Clear(BLUE);
+  Paint_Clear(BLACK);
 
   // Info table
   // setup----------------------------------------------------------------
@@ -143,10 +143,8 @@ void display_cards(Action action, std::vector<int> player_cards,
 
 
     //-------------- CLEAR TABLE -----------------
-
-    Paint_DrawRectangle(1, 152, 128, 175, GREEN, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    //Paint_DrawRectangle();
-
+    Paint_DrawRectangle(1, 152, 158, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    Paint_DrawRectangle(162, 152, 320, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     //-------------- CLEAR TABLE -----------------
 
 
