@@ -478,6 +478,28 @@ void Paint_DrawCardUp(UWORD x, UWORD y, int suit, int VALUE) {
 void ChangeToString(int x, String *Scount) {
     
     switch(x) {
+        case -1:  *Scount = "-1";  break;
+        case -2:  *Scount = "-2";  break;
+        case -3:  *Scount = "-3";  break;
+        case -4:  *Scount = "-4";  break;
+        case -5:  *Scount = "-5";  break;
+        case -6:  *Scount = "-6";  break;
+        case -7:  *Scount = "-7";  break;
+        case -8:  *Scount = "-8";  break;
+        case -9:  *Scount = "-9";  break;
+        case -10: *Scount = "-10"; break;
+
+        case -11: *Scount = "-11"; break;
+        case -12: *Scount = "-12"; break;
+        case -13: *Scount = "-13"; break;
+        case -14: *Scount = "-14"; break;
+        case -15: *Scount = "-15"; break;
+        case -16: *Scount = "-16"; break;
+        case -17: *Scount = "-17"; break;
+        case -18: *Scount = "-18"; break;
+        case -19: *Scount = "-19"; break;
+        case -20: *Scount = "-20"; break;
+
         case 0:  *Scount = " 0"; break;
         case 1:  *Scount = " 1"; break;
         case 2:  *Scount = " 2"; break;
