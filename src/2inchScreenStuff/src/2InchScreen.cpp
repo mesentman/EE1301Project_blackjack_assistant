@@ -1,4 +1,4 @@
-#include "Fonts.h" // make sure your font file is included
+#include "fonts.h" // make sure your font file is included
 #include "GUI_Paint.h"
 #include "LCD_Driver.h"
 #include "Paint_DrawCard.h" //personal header file for all the card drawing functions
@@ -38,10 +38,7 @@ SYSTEM_THREAD(ENABLED);
 #define KING 13
 //******************************************************************************
 
-int dealerCount = 0;
-int playerCount = 0;
-String dealerScount;
-String playerScount;
+
 
 // if hit is true
 // Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);  //centered
@@ -118,43 +115,166 @@ void screen_init() {
   // setup----------------------------------------------------------------
 }
 
-bool runOnce = true;
-int dcs = 1;   // dealer card start
-int pcs = 162; // player card start
-int CSW = 19;  // card stack width
-void display_cards(Action action, std::vector<int> player_cards,
-                   std::vector<int> dealer_cards) {
+
+int dealCardPositionDealer;
+int suitDealer;
+int valDealer;
+
+int dealCardPositionPlayer;
+int suitPlayer;
+int valPlayer;
+
+void display_cards(Action action, std::vector<int> player_cards, std::vector<int> dealer_cards) {
+  bool runOnce = true;
+  int dcs = 1;   // dealer card start
+  int pcs = 162; // player card start
+  int CSW = 19;  // card stack width
+
+  int dealerCount = 0;
+  int playerCount = 0;
+  String dealerScount;
+  String playerScount;
   while (runOnce == false) {
 
-    // DEALER CARDS-----------
-    Paint_DrawCardUp(dcs, 152, 0, 1);           // Ace of Hearts
-    Paint_DrawCardUp(dcs + CSW, 152, 2, 1);     // Ace of Clubs
-    Paint_DrawCardUp(dcs + CSW * 2, 152, 1, 1); // Ace of Diamonds
-    Paint_DrawCardUp(dcs + CSW * 3, 152, 3, 1); // Ace of Spades
-    Paint_DrawCardUp(dcs + CSW * 4, 152, 2, 8); // Ace of Spades
-    Paint_DrawCardDown(dcs + CSW * 5, 152);     // waiting for player action
-    // DEALER CARDS-----------
+    //output dealers first
+    //then players
+    //then action
 
-    // PLAYER CARDS-----------
-    Paint_DrawCardUp(pcs, 152, 0, 1);           // Ace of Hearts
-    Paint_DrawCardUp(pcs + CSW, 152, 2, 1);     // Ace of Clubs
-    Paint_DrawCardUp(pcs + CSW * 2, 152, 1, 1); // Ace of Diamonds
-    Paint_DrawCardUp(pcs + CSW * 3, 152, 3, 1); // Ace of Spades
-    Paint_DrawCardUp(pcs + CSW * 4, 152, 2, 8); // Ace of Spades
-    Paint_DrawCardDown(pcs + CSW * 5, 152);     // waiting for player action
-    // PLAYER CARDS-----------
+    //-------------- DEALER CARDS -----------------
+    if (dealer_cards.size() >= 0) {
+      dealCardPositionDealer = 0;
+      for (int i = 0; i < dealer_cards.size(); i++) {
+      
+      suitDealer = 0;
+      valDealer = (dealer_cards.at(i) % 13) + 1;
+
+      if ((dealer_cards.at(i) / 13) == 1) { suitDealer = 0;} //Brocks int HEART to my int HEART
+      if ((dealer_cards.at(i) / 13) == 2) { suitDealer = 1;} //Brocks int DIAMOND to my int DIAMOND
+      if ((dealer_cards.at(i) / 13) == 3) { suitDealer = 2;} //Brocks int CLUB to my int CLUB
+      if ((dealer_cards.at(i) / 13) == 0) { suitDealer = 3;} //Brocks int SPADE to my int SPADE
+
+      //        draw dealer card
+      Paint_DrawCardUp(dcs + (CSW*dealCardPositionDealer), 152, suitDealer, valDealer);
+
+      //        draw dealer count
+      switch (valDealer) {
+        case 1:
+          valDealer = 11;
+          break;
+        case 11:
+          valDealer = 10;
+          break;
+        case 12:
+          valDealer = 10;
+          break;
+        case 13:
+          valDealer = 10;
+          break;
+      }
+
+      dealerCount = dealerCount + valDealer;
+      if ((dealerCount > 21) && valDealer == 11) {
+        dealerCount = dealerCount - 10;
+      }
+      ChangeToString(dealerCount, &dealerScount); // check references and pointers if not working
+      Paint_DrawString_EN(162, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
+      
+
+      dealCardPositionDealer++;
+    }
+    }
+    //-------------- DEALER CARDS -----------------
+
+
+
+
+    //-------------- PLAYER CARDS -----------------
+    if (player_cards.size() >= 0) {
+      int dealCardPositionPlayer = 0;
+      for (int i = 0; i < player_cards.size(); i++) {
+
+      int valPlayer = (player_cards.at(i) % 13) + 1;
+
+      if ((player_cards.at(i) / 13) == 1) { suitPlayer = 0;} //Brocks int HEART to my int HEART
+      if ((player_cards.at(i) / 13) == 2) { suitPlayer = 1;} //Brocks int DIAMOND to my int DIAMOND
+      if ((player_cards.at(i) / 13) == 3) { suitPlayer = 2;} //Brocks int CLUB to my int CLUB
+      if ((player_cards.at(i) / 13) == 0) { suitPlayer = 3;} //Brocks int SPADE to my int SPADE
+
+      //        draw player card
+      Paint_DrawCardUp(pcs + (CSW*dealCardPositionPlayer), 152, suitPlayer, valPlayer);
+      
+      //        draw player count
+      switch (valPlayer) {
+        case 1:
+          valPlayer = 11;
+          break;
+        case 11:
+          valPlayer = 10;
+          break;
+        case 12:
+          valPlayer = 10;
+          break;
+        case 13:
+          valPlayer = 10;
+          break;
+      }
+
+      playerCount = playerCount + valPlayer;
+      if ((playerCount > 21) && valPlayer == 11) {
+        playerCount = playerCount - 10;
+      }
+      ChangeToString(playerCount, &playerScount); // check references and pointers if not working
+      Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
+
+      dealCardPositionPlayer++;
+    }
+    }
+    //-------------- PLAYER CARDS -----------------
+
+
+
+
+
+
+
+    //----------------- ACTION --------------------
+    if ((action == HIT) || (action == STAND) || (action == DOUBLE_DOWN) || (action == SPLIT)) {
+
+      switch (action) {
+        case HIT:
+            Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);
+            break;
+        case STAND:
+            Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
+            break;
+        case DOUBLE_DOWN:
+            Paint_DrawString_EN(17, 70, "         ", &Font24, BLACK, RED);//clear previous area because double is offset from others to be centered on screen
+            Paint_DrawString_EN(25, 70, " DOUBLE  ", &Font24, BLACK, RED);
+            break;
+        case SPLIT:
+            Paint_DrawString_EN(17, 70, "  SPLIT  ", &Font24, BLACK, RED);
+            break;
+      }
+    }     else {Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED);}
+    //----------------- ACTION --------------------
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Draw the counts on the screen
-    ChangeToString(
-        dealerCount,
-        &dealerScount); // check references and pointers if not working
-    ChangeToString(
-        playerCount,
-        &playerScount); // check references and pointers if not working
-    Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK,
-                        WHITE); // Dealer count
-    Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK,
-                        WHITE); // Player count
+    //ChangeToString(dealerCount, &dealerScount); // check references and pointers if not working
+    //ChangeToString(playerCount, &playerScount); // check references and pointers if not working
+    //Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
+    //Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
 
     runOnce = true;
   }
