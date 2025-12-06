@@ -3,6 +3,7 @@ import os
 import sys
 from threading import Thread
 
+import cv2
 import numpy as np
 import requests as r
 from tunnel import start_tunnel, stop_tunnel
@@ -11,7 +12,7 @@ from card_classification import detect_cards
 from collections import Counter
 from dotenv import load_dotenv
 from PIL import Image
-from websockets import ConnectionClosedError
+from websockets import ConnectionClosedError, ServerConnection
 from websockets.sync.server import Server, serve
 
 load_dotenv()
@@ -20,12 +21,11 @@ BASE_URL: str = "https://api.particle.io/v1/devices/"
 DEVICE_ID: str = os.getenv("PARTICLE_DEVICE_ID", "")
 PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
-BITLY_TOKEN: str = os.getenv("BITLY_ACCESS_TOKEN", "")
 WEBSOCKET_PORT: int = 8001
 
 HAND_HISTORY_SIZE: int = 15
 MIN_MODE_COUNT: int = 10
-MIN_CARDS_DETECTED: int = 1
+MIN_CARDS_DETECTED: int = 1  # TODO: This should be raised to 3
 MAX_FPS = 30
 
 
@@ -71,7 +71,7 @@ def get_stable_hand(
     return mode
 
 
-def receive(websocket):
+def receive(websocket: ServerConnection):
     prev_timestamp = None
     hand_history: list[tuple[tuple[str, ...], tuple[str, ...]]] = []
     last_sent_hand: tuple[tuple[str, ...], tuple[str, ...]] | None = None
@@ -81,7 +81,7 @@ def receive(websocket):
             timestamp_ms = int.from_bytes(message[:8])
             if not prev_timestamp:
                 prev_timestamp = timestamp_ms
-            # Artificial Frame Limiting to ~8 FPS
+            # Artificial Frame Limiting
             if timestamp_ms - prev_timestamp < (1 / MAX_FPS) * 1000:
                 continue
             prev_timestamp = timestamp_ms
@@ -94,6 +94,8 @@ def receive(websocket):
             dealer_cards, player_cards, display = result
 
             print(f"Detected - Dealer: {dealer_cards}, Player: {player_cards}")
+            _, buffer = cv2.imencode(".jpg", display)
+            websocket.send(buffer.tobytes())
             hand_key = hand_to_key(dealer_cards, player_cards)
             hand_history.append(hand_key)
             if len(hand_history) > HAND_HISTORY_SIZE:
@@ -115,7 +117,6 @@ def receive(websocket):
                 data={"arg": formatted},
             )
             print(resp.text)
-            print(resp.url)
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
@@ -127,15 +128,6 @@ def run_websocket(server: Server):
 
 def process_request(path, request_headers):
     return None
-
-
-def shorten_url(long_url: str) -> str:
-    api_url = "https://api-ssl.bitly.com/v4/shorten"
-    headers = {"Authorization": f"Bearer {BITLY_TOKEN}", "Content-Type": "application/json"}
-    data = {"long_url": long_url}
-    response = r.post(api_url, json=data, headers=headers)
-    print(response.status_code)
-    return response.json().get("link")
 
 
 def main():
@@ -152,7 +144,7 @@ def main():
         server = serve(receive, webserver.IP, WEBSOCKET_PORT, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
     if tunnel:
-        print(f"Live server running at url: {shorten_url(live_url)}, {live_url}")
+        print(f"Live server running at url: {live_url}")
     webserver.run_server(tunnel, ws_url)
     server.shutdown()
     if tunnel:
@@ -162,11 +154,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # print("Starting")
-    # average_time = 0
-    # n = 25
-    # for i in range(n):
-    #     start = time.time()
-    #     detect_cards("frame.jpg")
-    #     average_time += time.time() - start
-    # print(f"Average detection time: {average_time / n:.3f} seconds")
