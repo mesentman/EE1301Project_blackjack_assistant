@@ -40,6 +40,29 @@ SYSTEM_THREAD(ENABLED);
 #define KING 13
 //******************************************************************************
 
+
+
+
+//  2	+1
+//  3	+1
+//  4	+1
+//  5	+1
+//  6	+1
+//  7	0
+//  8	0
+//  9	0
+//  10 -1 
+//  J -1
+//  Q -1
+//  K	–1
+//  A	–1
+
+
+
+
+
+
+
 // if hit is true
 // Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);  //centered
 
@@ -121,6 +144,8 @@ int dealCardPositionPlayer;
 int suitPlayer;
 int valPlayer;
 
+
+
 void display_cards(Action action, std::vector<int> player_cards,
                    std::vector<int> dealer_cards, int true_count, int winrate) {
   bool runOnce = false;
@@ -130,6 +155,7 @@ void display_cards(Action action, std::vector<int> player_cards,
 
   int dealerCount = 0;
   int playerCount = 0;
+  int trueCount = 0;
   String dealerScount;
   String playerScount;
   String winSrate;
@@ -145,6 +171,8 @@ void display_cards(Action action, std::vector<int> player_cards,
     //-------------- CLEAR TABLE -----------------
     Paint_DrawRectangle(1, 152, 158, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawRectangle(162, 152, 320, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    Paint_DrawString_EN(130, 130, "--", &Font20, BLACK, WHITE);
+    Paint_DrawString_EN(162, 130, "--", &Font20, BLACK, WHITE);
     //-------------- CLEAR TABLE -----------------
 
 
@@ -188,6 +216,13 @@ void display_cards(Action action, std::vector<int> player_cards,
           break;
         }
 
+        if (valDealer >= 2 && valDealer <= 6) {
+          trueCount++;
+        }
+        if (valDealer == 10 || valDealer == 11) {
+          trueCount--;
+        }
+
         dealerCount = dealerCount + valDealer;
         if ((dealerCount > 21) && valDealer == 11) {
           dealerCount = dealerCount - 10;
@@ -196,7 +231,7 @@ void display_cards(Action action, std::vector<int> player_cards,
             dealerCount,
             &dealerScount); // check references and pointers if not working
         Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
-
+        
         dealCardPositionDealer++;
       }
     }
@@ -241,6 +276,13 @@ void display_cards(Action action, std::vector<int> player_cards,
           break;
         }
 
+        if (valPlayer >= 2 && valPlayer <= 6) {
+          trueCount++;
+        }
+        if (valPlayer == 10 || valPlayer == 11) {
+          trueCount--;
+        }
+
         playerCount = playerCount + valPlayer;
         if ((playerCount > 21) && valPlayer == 11) {
           playerCount = playerCount - 10;
@@ -282,28 +324,23 @@ void display_cards(Action action, std::vector<int> player_cards,
 
 
     //----------------- Run/True Count --------------------
-    if (true_count >= 0) {
-
-      ChangeToString(true_count, &trueScount);
+      ChangeToString(trueCount, &trueScount);
       Paint_DrawString_EN(225, 34, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
-
-    }
-    else {Paint_DrawString_EN(225, 34, "---", &Font24, BLACK, RED);}
     //----------------- Run/True Count --------------------
 
 
 
     //----------------- Win Rate --------------------
-    if (winrate >= 0) {
+    //if (winrate >= 0) {
       if (winrate == 100) {winrate = 99;}
 
       ChangeToString(winrate, &winSrate);
       Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
 
-    }
-    else {Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);}
+    //}
+    //else {Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);}
     //----------------- Win Rate --------------------
 
 
