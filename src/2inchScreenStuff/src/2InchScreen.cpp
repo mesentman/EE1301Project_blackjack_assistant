@@ -1,5 +1,5 @@
 #include "GUI_Paint.h"
-#include "2InchScreen.h"
+#include "screen.hpp"
 #include "LCD_Driver.h"
 #include "Paint_DrawCard.h" //personal header file for all the card drawing functions
 #include "Particle.h"
@@ -7,7 +7,7 @@
 #include "fonts.h" // make sure your font file is included
 // Screen Pinout
 //   VCC -> 3V3
-//   GND -> GND
+//   GND -> GND 
 //   DIN -> S0(MO)
 //   CLK -> S2(SCK)
 //   CS -> S3
