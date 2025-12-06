@@ -160,8 +160,8 @@ void loop() {
     }
     bool usable_ace = ace_count > 0 && player_total <= 21;
     bool same_card =
-        (player_cards.size() == 2 && get_card_value(player_cards.at(0)) ==
-                                         get_card_value(player_cards.at(1)));
+        (player_cards.size() == 2 && player_cards.at(0) % 13 ==
+                                         player_cards.at(1) % 13);
 
     int dealer_upcard = 0;
     if (!dealer_cards.empty()) {
