@@ -3,7 +3,7 @@
 **Course:** EE1301  
 **Project:** Blackjack Assistant
 
-This project implements a **Deep Q-Learning (DQN)** agent that learns optimal Blackjack strategy through self-play. It is paired with a high-performance **C++ Simulation Engine** to validate the agent's strategy using **flat betting** (constant bet size) to determine the baseline Expected Value (EV) and generate win-rate probability tables.
+This project implements a **Deep Q-Learning (DQN)** agent that learns optimal Blackjack strategy through self-play. It is paired with a high-performance **C++ Simulation Engine** to validate the agent's strategy using **flat betting** (constant bet size) to determine the baseline Expected Value (EV) and generate win-rate probability tables that will used to judge what is the best move based the player's cards and dealer's cards
 
 ## 🌟 Key Features
 
@@ -32,7 +32,9 @@ This project implements a **Deep Q-Learning (DQN)** agent that learns optimal Bl
 │   └── win_rate_table.h     # (Output) The final lookup table for the Assistant UI
 │
 └── exports/              # Output folder for saved policies
-
+```
+## How to run the Code 
+```text
 1. Training the agent 
 to train the model from scratch using the settings in config.py
 # Standard training (default 500k episodes)
@@ -75,8 +77,10 @@ g++ generate_table.cpp -o gen_table -O3
 # Run
 ./gen_table
 This generates win_rate_table.h in the same directory.
+```
 
-⚙️ Configuration
+## ⚙️ Configuration
+```text
 You can tweak the training performance in config.py:
 
 NUM_DECKS: Number of decks in the shoe (Default: 6).
@@ -86,15 +90,17 @@ USE_NOISY_NETS: Set True for Noisy Layers (better exploration), False for Epsilo
 USE_PER: Set True to use Prioritized Experience Replay.
 
 NUM_EPISODES: Total training games (Default: 500,000).
-
-🧠 Model DetailsThe neural network 
+```
+## 🧠 Model Details The neural network 
+```text
 (model.py) is a Noisy Dueling MLP:
 Input: State Vector (Player Sum, Dealer Card, Usable Ace, True Count).
 Hidden Layers: 512 units with LeakyReLU.Heads: Splits into Value (V(s)) and Advantage (A(s,a)) streams.
 Basically it has two parts a determinstic part of the value head then to account for the randomness we introduce a advantage stream that is stochastic meaning that if we hold our inputs constant for V(s) it always output the same thing but for A(s,a) it can output different values
-Output: Q-Values for [HIT, STAND, DOUBLE, SPLIT, SURRENDER].
+Output: Q-Values for [HIT, STAND, DOUBLE, SPLIT, SURRENDER]. In this we didn't acutally use Surrender
+```
 
-📋 Requirements
+## 📋 Requirements
 Python 3.8+
 
 PyTorch-Used for creating a model 
