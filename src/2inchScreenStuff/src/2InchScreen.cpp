@@ -41,7 +41,7 @@ SYSTEM_THREAD(ENABLED);
 //******************************************************************************
 
 // if hit is true
-// Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);  //centered
+// Paint_DrawString_EN(17, 70, "   HIT   ", &Font24, BLACK, RED);  //centered
 
 // if stand is true
 // Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
@@ -188,8 +188,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         ChangeToString(
             dealerCount,
             &dealerScount); // check references and pointers if not working
-        Paint_DrawString_EN(162, 130, dealerScount, &Font20, BLACK,
-                            WHITE); // Dealer count
+        Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
 
         dealCardPositionDealer++;
       }
@@ -257,7 +256,7 @@ void display_cards(Action action, std::vector<int> player_cards,
 
       switch (action) {
       case HIT:
-        Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);
+        Paint_DrawString_EN(17, 70, "   HIT   ", &Font24, BLACK, RED);
         break;
       case STAND:
         Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
@@ -273,7 +272,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         break;
       }
     } else {
-      Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED);
+      Paint_DrawString_EN(17, 70, "   ---   ", &Font24, BLACK, RED);
     }
     //----------------- ACTION --------------------
 
