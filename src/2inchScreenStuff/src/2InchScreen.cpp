@@ -141,7 +141,7 @@ void display_cards(Action action, std::vector<int> player_cards,
     //-------------- DEALER CARDS -----------------
     if (dealer_cards.size() >= 0) {
       dealCardPositionDealer = 0;
-      for (int i = 0; i < dealer_cards.size(); i++) {
+      for (size_t i = 0; i < dealer_cards.size(); i++) {
 
         suitDealer = 0;
         valDealer = (dealer_cards.at(i) % 13) + 1;
@@ -197,7 +197,7 @@ void display_cards(Action action, std::vector<int> player_cards,
     //-------------- PLAYER CARDS -----------------
     if (player_cards.size() >= 0) {
       int dealCardPositionPlayer = 0;
-      for (int i = 0; i < player_cards.size(); i++) {
+      for (size_t i = 0; i < player_cards.size(); i++) {
 
         int valPlayer = (player_cards.at(i) % 13) + 1;
 
