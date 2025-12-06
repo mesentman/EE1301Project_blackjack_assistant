@@ -1,4 +1,5 @@
 #include "GUI_Paint.h"
+#include "2InchScreen.h"
 #include "LCD_Driver.h"
 #include "Paint_DrawCard.h" //personal header file for all the card drawing functions
 #include "Particle.h"
