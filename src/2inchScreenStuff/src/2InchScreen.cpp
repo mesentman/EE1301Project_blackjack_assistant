@@ -134,6 +134,8 @@ void display_cards(Action action, std::vector<int> player_cards,
   int playerCount = 0;
   String dealerScount;
   String playerScount;
+  String winSrate;
+  String trueScount;
   while (runOnce == false) {
 
     // output dealers first
@@ -162,8 +164,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         } // Brocks int SPADE to my int SPADE
 
         //        draw dealer card
-        Paint_DrawCardUp(dcs + (CSW * dealCardPositionDealer), 152, suitDealer,
-                         valDealer);
+        Paint_DrawCardUp(dcs + (CSW * dealCardPositionDealer), 152, suitDealer, valDealer);
 
         //        draw dealer count
         switch (valDealer) {
@@ -216,8 +217,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         } // Brocks int SPADE to my int SPADE
 
         //        draw player card
-        Paint_DrawCardUp(pcs + (CSW * dealCardPositionPlayer), 152, suitPlayer,
-                         valPlayer);
+        Paint_DrawCardUp(pcs + (CSW * dealCardPositionPlayer), 152, suitPlayer, valPlayer);
 
         //        draw player count
         switch (valPlayer) {
@@ -239,11 +239,8 @@ void display_cards(Action action, std::vector<int> player_cards,
         if ((playerCount > 21) && valPlayer == 11) {
           playerCount = playerCount - 10;
         }
-        ChangeToString(
-            playerCount,
-            &playerScount); // check references and pointers if not working
-        Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK,
-                            WHITE); // Player count
+        ChangeToString(playerCount, &playerScount); // check references and pointers if not working
+        Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
 
         dealCardPositionPlayer++;
       }
@@ -275,6 +272,48 @@ void display_cards(Action action, std::vector<int> player_cards,
       Paint_DrawString_EN(17, 70, "   ---   ", &Font24, BLACK, RED);
     }
     //----------------- ACTION --------------------
+
+
+
+    //----------------- Run/True Count --------------------
+    if (true_count >= 0) {
+
+      ChangeToString(true_count, &trueScount);
+      Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
+
+    }
+    else {Paint_DrawString_EN(225, 34, "---", &Font24, BLACK, RED);}
+    //----------------- Run/True Count --------------------
+
+    
+
+    //----------------- Win Rate --------------------
+    if (winrate >= 0) {
+      if (winrate == 100) {winrate == 99;}
+
+      ChangeToString(winrate, &winSrate);
+      Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
+
+    }
+    else {Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);}
+    //----------------- Win Rate --------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Draw the counts on the screen
     // ChangeToString(dealerCount, &dealerScount); // check references and
