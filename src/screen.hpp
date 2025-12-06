@@ -1,6 +1,7 @@
 #ifndef SCREEN_HPP
 #define SCREEN_HPP
 #include "blackjack.hpp"
+#include "2inchScreenStuff/src/2InchScreen.h"
 
 void lcd_init();
 void screen_init();
