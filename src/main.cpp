@@ -142,7 +142,6 @@ void setup() {
   Serial.begin(9600);
   screen_init();
   Particle.function("receive_cards", receive_cards);
-  display_scanning();
 }
 
 void loop() {
