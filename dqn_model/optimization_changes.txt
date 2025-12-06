@@ -1,0 +1,203 @@
+============================================================
+BLACKJACK TRAINING OPTIMIZATION GUIDE (NOISY NETS EDITION)
+============================================================
+Goal: Increase training speed while keeping Noisy Nets active.
+Files to edit: config.py, dql_agent.py
+
+INSTRUCTION 1: MODIFY 'config.py'
+------------------------------------------------------------
+We will keep Noisy Nets (better exploration) but disable 
+Prioritized Experience Replay (PER), which is the main 
+CPU bottleneck.
+
+Find these lines and change them to the values below:
+
+# ------------------------
+# EXPLORATION SETTINGS
+# ------------------------
+USE_NOISY_NETS = True      # KEEP THIS TRUE (Per your request)
+
+# ------------------------
+# PRIORITIZED EXPERIENCE REPLAY (PER)
+# ------------------------
+USE_PER = False            # CHANGE TO FALSE (Massive speedup)
+
+
+============================================================
+INSTRUCTION 2: MODIFY 'dql_agent.py' (Model Compilation)
+============================================================
+We will use PyTorch 2.0's compiler to fuse operations.
+
+Search for the function: train_and_export_quick() 
+(Also apply this to train_and_export_core if possible)
+
+Find where 'policy_net' and 'target_net' are defined.
+Add the torch.compile block shown below:
+
+    # ---- Model ----
+    policy_net = NoisyDuelingMLP(state_dim, NUM_ACTIONS, hidden=HIDDEN).to(DEVICE)
+    target_net = NoisyDuelingMLP(state_dim, NUM_ACTIONS, hidden=HIDDEN).to(DEVICE)
+    
+    # [INSERT THIS BLOCK] ======================================
+    try:
+        policy_net = torch.compile(policy_net)
+        target_net = torch.compile(target_net)
+        print(">> Optimization: Model compiled successfully.")
+    except:
+        print(">> Optimization: torch.compile skipped.")
+    # ==========================================================
+
+    target_net.load_state_dict(policy_net.state_dict())
+    target_net.eval()
+
+
+============================================================
+INSTRUCTION 3: MODIFY 'dql_agent.py' (Training Frequency)
+============================================================
+Currently, the AI trains after EVERY hand. We want it to train 
+only every 4 hands to save processing power.
+
+Search for the function: _train_and_export_core(...)
+Locate the loop: "for ep in range(num_episodes):"
+
+Inside that loop, find this exact line:
+    loss = optimize_model(policy_net, target_net, optimizer, replay)
+
+Replace that SINGLE line with this IF/ELSE block:
+
+    # [REPLACE WITH THIS BLOCK] ================================
+    # Optimization: Only train every 4 steps to speed up loop
+    if step_count % 4 == 0:
+        loss = optimize_model(policy_net, target_net, optimizer, replay)
+    else:
+        loss = None
+    # ==========================================================
+
+============================================================
+END OF INSTRUCTIONS
+============================================================
+============================================================
+MODEL EFFICIENCY UPGRADE GUIDE
+============================================================
+Goal: Simplify the Neural Network to run 3x - 10x faster.
+Files to edit: config.py, model.py
+
+In Blackjack, the inputs are simple integers (Total, Count).
+We don't need massive layers or normalization.
+
+INSTRUCTION 1: MODIFY 'config.py' (Reduce Brain Size)
+------------------------------------------------------------
+Currently, HIDDEN is 512. That means a 512x512 matrix multiply 
+every step. Reducing this to 128 makes the math 16x faster 
+(since 4x smaller width squared).
+
+Find this line:
+    HIDDEN = 512
+
+Change it to:
+    HIDDEN = 128  # Plenty of brain power for Blackjack
+
+
+INSTRUCTION 2: REPLACE 'model.py' (Remove LayerNorm)
+------------------------------------------------------------
+LayerNorm stabilizes training for complex images but adds 
+overhead for simple games. Removing it makes the signal 
+path cleaner and faster.
+
+Delete everything in 'model.py' and replace it with this 
+optimized, lightweight version:
+
+# START OF NEW MODEL.PY ------------------------------------
+
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class NoisyLinear(nn.Module):
+    """
+    Standard Noisy Linear Layer.
+    """
+    def __init__(self, in_features, out_features, sigma_init=0.5):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.sigma_init = sigma_init
+
+        # Learnable parameters
+        self.weight_mu = nn.Parameter(torch.empty(out_features, in_features))
+        self.weight_sigma = nn.Parameter(torch.empty(out_features, in_features))
+        self.register_buffer('weight_eps', torch.empty(out_features, in_features))
+
+        self.bias_mu = nn.Parameter(torch.empty(out_features))
+        self.bias_sigma = nn.Parameter(torch.empty(out_features))
+        self.register_buffer('bias_eps', torch.empty(out_features))
+
+        self.reset_parameters()
+        self.reset_noise()
+
+    def reset_parameters(self):
+        mu_range = 1.0 / math.sqrt(self.in_features)
+        nn.init.uniform_(self.weight_mu, -mu_range, mu_range)
+        nn.init.uniform_(self.bias_mu, -mu_range, mu_range)
+        nn.init.constant_(self.weight_sigma, self.sigma_init / math.sqrt(self.in_features))
+        nn.init.constant_(self.bias_sigma, self.sigma_init / math.sqrt(self.in_features))
+
+    def reset_noise(self):
+        # Generate random noise for weights and biases
+        self.weight_eps.normal_()
+        self.bias_eps.normal_()
+
+    def forward(self, input):
+        # If we are training, use the noise. If evaluating, just use the mean.
+        if self.training:
+            weight = self.weight_mu + self.weight_sigma * self.weight_eps
+            bias = self.bias_mu + self.bias_sigma * self.bias_eps
+        else:
+            weight = self.weight_mu
+            bias = self.bias_mu
+        
+        return F.linear(input, weight, bias)
+
+
+class NoisyDuelingMLP(nn.Module):
+    def __init__(self, in_dim, out_dim, hidden=128, sigma_init=0.5):
+        super().__init__()
+        
+        # OPTIMIZATION: Removed LayerNorm and reduced depth
+        # Simple ReLU is faster than LeakyReLU on some hardware
+        self.feature_layer = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, hidden),
+            nn.ReLU()
+        )
+        
+        # Value Head (Deterministic Part)
+        # We use a standard Linear layer here to save compute
+        self.value_stream = nn.Linear(hidden, 1)
+        
+        # Advantage Head (Stochastic Part)
+        # We keep the Noisy Layer here for exploration
+        self.adv_stream = NoisyLinear(hidden, out_dim, sigma_init=sigma_init)
+
+    def forward(self, x):
+        feat = self.feature_layer(x)
+        
+        val = self.value_stream(feat)
+        adv = self.adv_stream(feat)
+        
+        # Dueling Combination
+        return val + (adv - adv.mean(dim=1, keepdim=True))
+
+# END OF NEW MODEL.PY --------------------------------------
+
+============================================================
+SUMMARY OF CHANGES
+============================================================
+1. Removed 'nn.LayerNorm': Faster forward pass.
+2. Switched 'LeakyReLU' to 'ReLU': Standard optimization.
+3. Hybrid Heads: 
+   - Value Stream is now a standard Linear layer (Faster).
+   - Advantage Stream is NoisyLinear (Keeps exploration).
+   This mix is often more stable and faster than making both noisy.
