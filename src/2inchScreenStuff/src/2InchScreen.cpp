@@ -115,7 +115,7 @@ void screen_init() {
   Paint_DrawString_EN(225, 34, "--", &Font24, BLACK, RED);      // centered
   Paint_DrawString_EN(196, 67, "Win", &Font20, BLACK, WHITE);    // centered
   Paint_DrawString_EN(242, 67, "Rate", &Font20, BLACK, WHITE);   // centered
-  Paint_DrawString_EN(225, 91, "--", &Font24, BLACK, RED);      // centered
+  Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);      // centered
   //---------- WORDS SETUP ----------------
   // Info table
   // setup----------------------------------------------------------------

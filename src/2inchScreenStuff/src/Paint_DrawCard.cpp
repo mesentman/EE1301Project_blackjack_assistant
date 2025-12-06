@@ -625,16 +625,16 @@ void ChangeToString(int x, String *Scount) {
 void ChangeToStringPercent(int x, String *Scount) {
     switch(x) {
         // ----- 0 -----
-        case 0:   *Scount = "0%";   break;
-        case 1:   *Scount = "1%";   break;
-        case 2:   *Scount = "2%";   break;
-        case 3:   *Scount = "3%";   break;
-        case 4:   *Scount = "4%";   break;
-        case 5:   *Scount = "5%";   break;
-        case 6:   *Scount = "6%";   break;
-        case 7:   *Scount = "7%";   break;
-        case 8:   *Scount = "8%";   break;
-        case 9:   *Scount = "9%";   break;
+        case 0:   *Scount = " 0%";   break;
+        case 1:   *Scount = " 1%";   break;
+        case 2:   *Scount = " 2%";   break;
+        case 3:   *Scount = " 3%";   break;
+        case 4:   *Scount = " 4%";   break;
+        case 5:   *Scount = " 5%";   break;
+        case 6:   *Scount = " 6%";   break;
+        case 7:   *Scount = " 7%";   break;
+        case 8:   *Scount = " 8%";   break;
+        case 9:   *Scount = " 9%";   break;
         case 10:  *Scount = "10%";  break;
 
         case 11:  *Scount = "11%";  break;
@@ -659,8 +659,6 @@ void ChangeToStringPercent(int x, String *Scount) {
         case 29:  *Scount = "29%";  break;
         case 30:  *Scount = "30%";  break;
 
-        // If you want, I can generate 31–100 automatically,
-        // but here's 31–40 for now:
         case 31: *Scount = "31%"; break;
         case 32: *Scount = "32%"; break;
         case 33: *Scount = "33%"; break;
@@ -672,10 +670,73 @@ void ChangeToStringPercent(int x, String *Scount) {
         case 39: *Scount = "39%"; break;
         case 40: *Scount = "40%"; break;
 
-        // You tell me if you want 41–100 too.
+        case 41: *Scount = "41%"; break;
+        case 42: *Scount = "42%"; break;
+        case 43: *Scount = "43%"; break;
+        case 44: *Scount = "44%"; break;
+        case 45: *Scount = "45%"; break;
+        case 46: *Scount = "46%"; break;
+        case 47: *Scount = "47%"; break;
+        case 48: *Scount = "48%"; break;
+        case 49: *Scount = "49%"; break;
+        case 50: *Scount = "50%"; break;
+
+        case 51: *Scount = "51%"; break;
+        case 52: *Scount = "52%"; break;
+        case 53: *Scount = "53%"; break;
+        case 54: *Scount = "54%"; break;
+        case 55: *Scount = "55%"; break;
+        case 56: *Scount = "56%"; break;
+        case 57: *Scount = "57%"; break;
+        case 58: *Scount = "58%"; break;
+        case 59: *Scount = "59%"; break;
+        case 60: *Scount = "60%"; break;
+
+        case 61: *Scount = "61%"; break;
+        case 62: *Scount = "62%"; break;
+        case 63: *Scount = "63%"; break;
+        case 64: *Scount = "64%"; break;
+        case 65: *Scount = "65%"; break;
+        case 66: *Scount = "66%"; break;
+        case 67: *Scount = "67%"; break;
+        case 68: *Scount = "68%"; break;
+        case 69: *Scount = "69%"; break;
+        case 70: *Scount = "70%"; break;
+
+        case 71: *Scount = "71%"; break;
+        case 72: *Scount = "72%"; break;
+        case 73: *Scount = "73%"; break;
+        case 74: *Scount = "74%"; break;
+        case 75: *Scount = "75%"; break;
+        case 76: *Scount = "76%"; break;
+        case 77: *Scount = "77%"; break;
+        case 78: *Scount = "78%"; break;
+        case 79: *Scount = "79%"; break;
+        case 80: *Scount = "80%"; break;
+
+        case 81: *Scount = "81%"; break;
+        case 82: *Scount = "82%"; break;
+        case 83: *Scount = "83%"; break;
+        case 84: *Scount = "84%"; break;
+        case 85: *Scount = "85%"; break;
+        case 86: *Scount = "86%"; break;
+        case 87: *Scount = "87%"; break;
+        case 88: *Scount = "88%"; break;
+        case 89: *Scount = "89%"; break;
+        case 90: *Scount = "90%"; break;
+
+        case 91: *Scount = "91%"; break;
+        case 92: *Scount = "92%"; break;
+        case 93: *Scount = "93%"; break;
+        case 94: *Scount = "94%"; break;
+        case 95: *Scount = "95%"; break;
+        case 96: *Scount = "96%"; break;
+        case 97: *Scount = "97%"; break;
+        case 98: *Scount = "98%"; break;
+        case 99: *Scount = "99%"; break;
 
         default:
-            *Scount = "--%";
+            *Scount = "---";
             break;
     }
 }
