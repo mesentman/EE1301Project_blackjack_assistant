@@ -112,10 +112,10 @@ void screen_init() {
   Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED); // centered
   Paint_DrawString_EN(188, 10, "Run", &Font20, BLACK, WHITE);    // centered
   Paint_DrawString_EN(234, 10, "Count", &Font20, BLACK, WHITE);  // centered
-  Paint_DrawString_EN(225, 34, "---", &Font24, BLACK, RED);      // centered
+  Paint_DrawString_EN(225, 34, "--", &Font24, BLACK, RED);      // centered
   Paint_DrawString_EN(196, 67, "Win", &Font20, BLACK, WHITE);    // centered
   Paint_DrawString_EN(242, 67, "Rate", &Font20, BLACK, WHITE);   // centered
-  Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);      // centered
+  Paint_DrawString_EN(225, 91, "--", &Font24, BLACK, RED);      // centered
   //---------- WORDS SETUP ----------------
   // Info table
   // setup----------------------------------------------------------------
@@ -146,8 +146,7 @@ int valPlayer;
 
 
 
-void display_cards(Action action, std::vector<int> player_cards,
-                   std::vector<int> dealer_cards, int true_count, int winrate) {
+void display_cards(Action action, std::vector<int> player_cards, std::vector<int> dealer_cards, int true_count, int winrate) {
   bool runOnce = false;
   int dcs = 1;   // dealer card start
   int pcs = 162; // player card start
@@ -168,12 +167,24 @@ void display_cards(Action action, std::vector<int> player_cards,
     // then action
 
 
+
+
+
+
     //-------------- CLEAR TABLE -----------------
     Paint_DrawRectangle(1, 152, 158, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawRectangle(162, 152, 320, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawString_EN(130, 130, "--", &Font20, BLACK, WHITE);
     Paint_DrawString_EN(162, 130, "--", &Font20, BLACK, WHITE);
     //-------------- CLEAR TABLE -----------------
+
+
+
+
+
+
+
+
 
 
     //-------------- DEALER CARDS -----------------
@@ -237,6 +248,16 @@ void display_cards(Action action, std::vector<int> player_cards,
     }
     //-------------- DEALER CARDS -----------------
 
+
+
+
+
+
+
+
+
+
+
     //-------------- PLAYER CARDS -----------------
     if (player_cards.size() >= 0) {
       int dealCardPositionPlayer = 0;
@@ -295,6 +316,13 @@ void display_cards(Action action, std::vector<int> player_cards,
     }
     //-------------- PLAYER CARDS -----------------
 
+
+
+
+
+
+
+
     //----------------- ACTION --------------------
     if ((action == HIT) || (action == STAND) || (action == DOUBLE_DOWN) ||
         (action == SPLIT)) {
@@ -323,11 +351,22 @@ void display_cards(Action action, std::vector<int> player_cards,
 
 
 
+
+
+
+
+
     //----------------- Run/True Count --------------------
       ChangeToString(trueCount, &trueScount);
       Paint_DrawString_EN(225, 34, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
     //----------------- Run/True Count --------------------
+
+
+
+
+
+
 
 
 
