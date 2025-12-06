@@ -1,5 +1,6 @@
 #include "GUI_Paint.h"
 #include "screen.hpp"
+#include "2InchScreen.hpp"
 #include "LCD_Driver.h"
 #include "Paint_DrawCard.h" //personal header file for all the card drawing functions
 #include "Particle.h"
@@ -124,7 +125,7 @@ int valPlayer;
 
 void display_cards(Action action, std::vector<int> player_cards,
                    std::vector<int> dealer_cards, int true_count, int winrate) {
-  bool runOnce = true;
+  bool runOnce = false;
   int dcs = 1;   // dealer card start
   int pcs = 162; // player card start
   int CSW = 19;  // card stack width

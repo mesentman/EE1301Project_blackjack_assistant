@@ -2,6 +2,7 @@
 #include "blackjack.hpp"
 #include "screen.hpp"
 #include "win_rate_table.h"
+#include "2InchScreen.hpp"
 #include <vector>
 
 SYSTEM_MODE(AUTOMATIC);
