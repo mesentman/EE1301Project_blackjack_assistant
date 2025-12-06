@@ -136,7 +136,7 @@ TableReturn get_action_from_table(int player_total, bool same_card,
     action = DOUBLE_DOWN;
   }
   return TableReturn{action, winrate};
-}
+} 
 
 void setup() {
   Serial.begin(9600);

@@ -44,16 +44,16 @@ SYSTEM_THREAD(ENABLED);
 // Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);  //centered
 
 // if stand is true
-// Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
+// Paint_DrawString_EN(17, 75, "  STAND  ", &Font24, BLACK, RED);
 
 // if double is true
-// Paint_DrawString_EN(25, 70, " DOUBLE  ", &Font24, BLACK, RED);
+// Paint_DrawString_EN(25, 75, " DOUBLE  ", &Font24, BLACK, RED);
 
 // if split is true
-// Paint_DrawString_EN(17, 70, "  SPLIT  ", &Font24, BLACK, RED);
+// Paint_DrawString_EN(17, 75, "  SPLIT  ", &Font24, BLACK, RED);
 
 // if surrender is true
-// Paint_DrawString_EN(17, 70, "SURRENDER", &Font24, BLACK, RED);
+// Paint_DrawString_EN(17, 75, "SURRENDER", &Font24, BLACK, RED);
 
 void screen_init() {
   SPI.begin();
@@ -100,15 +100,13 @@ void screen_init() {
   // card table
   // setup----------------------------------------------------------------
   Paint_DrawLine(1, 125, 320, 125, RED, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
-  Paint_DrawString_EN(22, 130, "DEALER", &Font20, BLACK,
-                      WHITE); //          CENTERED
+  Paint_DrawString_EN(22, 130, "DEALER", &Font20, BLACK, WHITE); //          CENTERED
   Paint_DrawLine(129, 126, 129, 150, RED, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
   Paint_DrawLine(1, 151, 320, 151, RED, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
   Paint_DrawString_EN(130, 130, "--", &Font20, BLACK, WHITE);
   Paint_DrawString_EN(162, 130, "--", &Font20, BLACK, WHITE);
   Paint_DrawLine(191, 126, 191, 150, RED, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
-  Paint_DrawString_EN(213, 130, "PLAYER", &Font20, BLACK,
-                      WHITE); //        CENTERED
+  Paint_DrawString_EN(213, 130, "PLAYER", &Font20, BLACK, WHITE); //        CENTERED
   Paint_DrawLine(1, 151, 320, 151, RED, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
   Paint_DrawLine(160, 126, 160, 240, RED, DOT_PIXEL_2X2, LINE_STYLE_SOLID);
   // card table
@@ -134,11 +132,21 @@ void display_cards(Action action, std::vector<int> player_cards,
   int playerCount = 0;
   String dealerScount;
   String playerScount;
+  String winSrate;
+  String trueScount;
   while (runOnce == false) {
 
-    // output dealers first
+    // clear card table first
+    // output dealers
     // then players
     // then action
+
+
+    //-------------- CLEAR TABLE -----------------
+    Paint_DrawRectangle(1, 152, 158, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    Paint_DrawRectangle(162, 152, 320, 240, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    //-------------- CLEAR TABLE -----------------
+
 
     //-------------- DEALER CARDS -----------------
     if (dealer_cards.size() >= 0) {
@@ -162,8 +170,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         } // Brocks int SPADE to my int SPADE
 
         //        draw dealer card
-        Paint_DrawCardUp(dcs + (CSW * dealCardPositionDealer), 152, suitDealer,
-                         valDealer);
+        Paint_DrawCardUp(dcs + (CSW * dealCardPositionDealer), 152, suitDealer, valDealer);
 
         //        draw dealer count
         switch (valDealer) {
@@ -188,8 +195,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         ChangeToString(
             dealerCount,
             &dealerScount); // check references and pointers if not working
-        Paint_DrawString_EN(162, 130, dealerScount, &Font20, BLACK,
-                            WHITE); // Dealer count
+        Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
 
         dealCardPositionDealer++;
       }
@@ -217,8 +223,7 @@ void display_cards(Action action, std::vector<int> player_cards,
         } // Brocks int SPADE to my int SPADE
 
         //        draw player card
-        Paint_DrawCardUp(pcs + (CSW * dealCardPositionPlayer), 152, suitPlayer,
-                         valPlayer);
+        Paint_DrawCardUp(pcs + (CSW * dealCardPositionPlayer), 152, suitPlayer, valPlayer);
 
         //        draw player count
         switch (valPlayer) {
@@ -240,11 +245,8 @@ void display_cards(Action action, std::vector<int> player_cards,
         if ((playerCount > 21) && valPlayer == 11) {
           playerCount = playerCount - 10;
         }
-        ChangeToString(
-            playerCount,
-            &playerScount); // check references and pointers if not working
-        Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK,
-                            WHITE); // Player count
+        ChangeToString(playerCount, &playerScount); // check references and pointers if not working
+        Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
 
         dealCardPositionPlayer++;
       }
@@ -260,22 +262,66 @@ void display_cards(Action action, std::vector<int> player_cards,
         Paint_DrawString_EN(17, 75, "   HIT   ", &Font24, BLACK, RED);
         break;
       case STAND:
-        Paint_DrawString_EN(17, 70, "  STAND  ", &Font24, BLACK, RED);
+        Paint_DrawString_EN(17, 75, "  STAND  ", &Font24, BLACK, RED);
         break;
       case DOUBLE_DOWN:
-        Paint_DrawString_EN(17, 70, "         ", &Font24, BLACK,
+        Paint_DrawString_EN(17, 75, "         ", &Font24, BLACK,
                             RED); // clear previous area because double is
                                   // offset from others to be centered on screen
-        Paint_DrawString_EN(25, 70, " DOUBLE  ", &Font24, BLACK, RED);
+        Paint_DrawString_EN(25, 75, " DOUBLE  ", &Font24, BLACK, RED);
         break;
       case SPLIT:
-        Paint_DrawString_EN(17, 70, "  SPLIT  ", &Font24, BLACK, RED);
+        Paint_DrawString_EN(17, 75, "  SPLIT  ", &Font24, BLACK, RED);
         break;
       }
     } else {
       Paint_DrawString_EN(17, 75, "   ---   ", &Font24, BLACK, RED);
     }
     //----------------- ACTION --------------------
+
+
+
+    //----------------- Run/True Count --------------------
+    if (true_count >= 0) {
+
+      ChangeToString(true_count, &trueScount);
+      Paint_DrawString_EN(225, 34, "   ", &Font24, BLACK, RED);
+      Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
+
+    }
+    else {Paint_DrawString_EN(225, 34, "---", &Font24, BLACK, RED);}
+    //----------------- Run/True Count --------------------
+
+
+
+    //----------------- Win Rate --------------------
+    if (winrate >= 0) {
+      if (winrate == 100) {winrate = 99;}
+
+      ChangeToString(winrate, &winSrate);
+      Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
+      Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
+
+    }
+    else {Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);}
+    //----------------- Win Rate --------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Draw the counts on the screen
     // ChangeToString(dealerCount, &dealerScount); // check references and
