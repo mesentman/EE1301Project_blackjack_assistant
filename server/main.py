@@ -23,8 +23,8 @@ PARTICLE_FUNCTION: str = "receive_cards"
 ACCESS_TOKEN: str = os.getenv("PARTICLE_ACCESS_TOKEN", "")
 WEBSOCKET_PORT: int = 8001
 
-HAND_HISTORY_SIZE: int = 15
-MIN_MODE_COUNT: int = 10
+HAND_HISTORY_SIZE: int = 60
+MIN_MODE_COUNT: int = 20
 MIN_CARDS_DETECTED: int = 1  # TODO: This should be raised to 3
 MAX_FPS = 30
 
