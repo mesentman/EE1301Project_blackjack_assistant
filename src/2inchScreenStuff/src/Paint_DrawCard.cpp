@@ -478,6 +478,7 @@ void Paint_DrawCardUp(UWORD x, UWORD y, int suit, int VALUE) {
 void ChangeToString(int x, String *Scount) {
     
     switch(x) {
+        case 0:  *Scount = " 0"; break;
         case 1:  *Scount = " 1"; break;
         case 2:  *Scount = " 2"; break;
         case 3:  *Scount = " 3"; break;
