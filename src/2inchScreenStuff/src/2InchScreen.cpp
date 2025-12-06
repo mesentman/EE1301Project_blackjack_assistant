@@ -324,14 +324,9 @@ void display_cards(Action action, std::vector<int> player_cards,
 
 
     //----------------- Run/True Count --------------------
-    if (trueCount >= 0) {
-
       ChangeToString(trueCount, &trueScount);
       Paint_DrawString_EN(225, 34, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
-
-    }
-    else {Paint_DrawString_EN(225, 34, "---", &Font24, BLACK, RED);}
     //----------------- Run/True Count --------------------
 
 
