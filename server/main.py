@@ -134,6 +134,7 @@ def shorten_url(long_url: str) -> str:
     headers = {"Authorization": f"Bearer {BITLY_TOKEN}", "Content-Type": "application/json"}
     data = {"long_url": long_url}
     response = r.post(api_url, json=data, headers=headers)
+    print(response.status_code)
     return response.json().get("link")
 
 
@@ -151,7 +152,7 @@ def main():
         server = serve(receive, webserver.IP, WEBSOCKET_PORT, ssl=webserver.ssl_context)
     Thread(name="WebSocketServerThread", target=run_websocket, daemon=True, args=(server,)).start()
     if tunnel:
-        print(f"Live server running at url: {shorten_url(live_url)}")
+        print(f"Live server running at url: {shorten_url(live_url)}, {live_url}")
     webserver.run_server(tunnel, ws_url)
     server.shutdown()
     if tunnel:

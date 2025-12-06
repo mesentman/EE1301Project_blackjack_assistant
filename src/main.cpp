@@ -1,6 +1,7 @@
 #include "Particle.h"
 #include "blackjack.hpp"
 #include "screen.hpp"
+#include "win_rate_table.h"
 #include <vector>
 
 SYSTEM_MODE(AUTOMATIC);
@@ -9,6 +10,10 @@ SerialLogHandler log_handler(LOG_LEVEL_INFO);
 std::vector<int> player_cards;
 std::vector<int> dealer_cards;
 bool new_hand = false;
+struct TableReturn {
+  Action action;
+  int winrate;
+};
 
 int get_card_value(int card) {
   int rank = card % 13;
@@ -92,8 +97,9 @@ int receive_cards(String data) {
 /// @param dealer_upcard Expected between 2-11 (11 = ace)
 /// @param true_count
 /// @return
-Action get_action_from_table(int player_total, bool same_card, bool useable_ace,
-                             int dealer_upcard, int true_count) {
+TableReturn get_action_from_table(int player_total, bool same_card,
+                                  bool useable_ace, int dealer_upcard,
+                                  int true_count) {
   if (player_total < 0) {
     player_total = 0;
   } else if (player_total > 21) {
@@ -110,21 +116,25 @@ Action get_action_from_table(int player_total, bool same_card, bool useable_ace,
   } else if (true_count > 11) {
     true_count = 11;
   }
+  Action action = STAND;
   int ret = blackjack_policy[player_total][ace][dealer_upcard][true_count];
+  int winrate =
+      blackjack_winrates[player_total][ace][dealer_upcard][true_count];
   if (ret / 10 == 3) {
     if (same_card) {
-      return SPLIT;
+      action = SPLIT;
+    } else {
+      ret = ret % 10;
     }
-    ret = ret % 10;
   }
-  if (ret == 0)
-    return HIT;
-  if (ret == 1)
-    return STAND;
-  if (ret == 2)
-    return DOUBLE_DOWN;
-  Serial.printf("Fell through to last STAND.\n");
-  return STAND; // Should never happen
+  if (ret == 0) {
+    action = HIT;
+  } else if (ret == 1) {
+    action = STAND;
+  } else if (ret == 2) {
+    action = DOUBLE_DOWN;
+  }
+  return TableReturn{action, winrate};
 }
 
 void setup() {
@@ -165,10 +175,12 @@ void loop() {
       true_count += get_hi_lo_count(card);
     }
 
-    Action action = get_action_from_table(player_total, same_card, usable_ace,
-                                          dealer_upcard, true_count);
+    TableReturn ret = get_action_from_table(player_total, same_card, usable_ace,
+                                            dealer_upcard, true_count);
+    Action action = ret.action;
+    int winrate = ret.winrate;
     // display_action(action, player_total);
-    display_cards(action, player_cards, dealer_cards);
+    display_cards(action, player_cards, dealer_cards, true_count, winrate);
 
     Serial.printf(
         "Player total: %d, usable ace: %d, Dealer: %d -> Action: %d\n",
