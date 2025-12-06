@@ -115,7 +115,7 @@ void screen_init() {
   Paint_DrawString_EN(225, 34, "--", &Font24, BLACK, RED);      // centered
   Paint_DrawString_EN(196, 67, "Win", &Font20, BLACK, WHITE);    // centered
   Paint_DrawString_EN(242, 67, "Rate", &Font20, BLACK, WHITE);   // centered
-  Paint_DrawString_EN(225, 91, "--", &Font24, BLACK, RED);      // centered
+  Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);      // centered
   //---------- WORDS SETUP ----------------
   // Info table
   // setup----------------------------------------------------------------
@@ -374,7 +374,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
     //if (winrate >= 0) {
       if (winrate == 100) {winrate = 99;}
 
-      ChangeToString(winrate, &winSrate);
+      ChangeToStringPercent(winrate, &winSrate);
       Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
 
