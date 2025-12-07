@@ -325,7 +325,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
 
         if (playerCount > 21) {
-          lose == true;
+          lose = true;
         }
 
         dealCardPositionPlayer++;
@@ -391,8 +391,8 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
     //if (winrate >= 0) {
       if (winrate == 100) {winrate = 99;}
 
-      if (win == true) {winrate == 99;}
-      if (lose == true) {winrate == 0;}
+      if (win == true) {winrate = 99;}
+      if (lose == true) {winrate = 0;}
 
       ChangeToStringPercent(winrate, &winSrate);
       Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
