@@ -159,6 +159,8 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
   String playerScount;
   String winSrate;
   String trueScount;
+  bool win = false;
+  bool lose = false;
   while (runOnce == false) {
 
     // clear card table first
@@ -245,6 +247,10 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
             dealerCount,
             &dealerScount); // check references and pointers if not working
         Paint_DrawString_EN(130, 130, dealerScount, &Font20, BLACK, WHITE); // Dealer count
+
+        if (dealerCount > 21) {
+          win = true;
+        }
         
         dealCardPositionDealer++;
       }
@@ -318,6 +324,10 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         ChangeToString(playerCount, &playerScount); // check references and pointers if not working
         Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
 
+        if (playerCount > 21) {
+          lose = true;
+        }
+
         dealCardPositionPlayer++;
       }
     }
@@ -379,11 +389,34 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
 
     //----------------- Win Rate --------------------
     //if (winrate >= 0) {
-      if (winrate == 100) {winrate = 99;}
+    if (winrate == 100) {winrate = 99;}
 
-      ChangeToStringPercent(winrate, &winSrate);
-      Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
-      Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
+      // Player busts → automatic loss
+    if (playerCount > 21) {
+      winrate = 0;
+    }
+
+    // Dealer busts → automatic win
+    else if (dealerCount > 21) {
+      winrate = 99;
+    }
+
+    // Higher hand wins
+    else if (playerCount > dealerCount) {
+      winrate = 99;
+    }
+    else if (dealerCount > playerCount) {
+      winrate = 0;
+    }
+
+    // Equal → push
+    else {
+      winrate = 50;   // or whatever you want
+    }
+
+    ChangeToStringPercent(winrate, &winSrate);
+    Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
+    Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
 
     //}
     //else {Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);}

@@ -3,8 +3,8 @@ import sys
 import numpy as np
 from ultralytics import YOLO
 
-MODEL = YOLO("runs/detect/train2/weights/best.pt")  # TODO: Perhaps a better model could be used
-MIN_CONFIDENCE = 0.5
+MODEL = YOLO("yolov8m_synthetic.pt")
+MIN_CONFIDENCE = 0.35
 
 
 def create_model(data: str):
@@ -27,13 +27,13 @@ def detect_cards(frame) -> tuple[dict[str, int], dict[str, int], np.ndarray] | N
 
     dealer_cards: dict[str, int] = {}
     player_cards: dict[str, int] = {}
-    # TODO: Maybe ignore if it detects more than 2 of the same card?
+
     for box, cls in zip(result.boxes.xyxy, result.boxes.cls):
-        x_center = (box[0] + box[2]) / 2
+        y_center = (box[1] + box[3]) / 2
         card_name = types.get(int(cls.item()))
         if card_name in dealer_cards or card_name in player_cards:
             continue
-        if x_center < midpoint:
+        if y_center < midpoint:
             dealer_cards[card_name] = 1
         else:
             player_cards[card_name] = 1
