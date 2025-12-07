@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 .vscode/
 yolo11n.pt
+yolov8m_synthetic.pt
 nul
 lib/
 .env
