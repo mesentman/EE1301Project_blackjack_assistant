@@ -325,7 +325,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         Paint_DrawString_EN(162, 130, playerScount, &Font20, BLACK, WHITE); // Player count
 
         if (playerCount > 21) {
-          lose == true;
+          lose = true;
         }
 
         dealCardPositionPlayer++;
