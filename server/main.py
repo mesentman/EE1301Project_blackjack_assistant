@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+from queue import Queue
 from threading import Thread
 
 import cv2
@@ -28,6 +29,7 @@ MIN_MODE_COUNT: int = 20
 MIN_CARDS_DETECTED: int = 3
 MAX_FPS = 30
 
+photon_queue: Queue[str] = Queue()
 
 SUIT_MAP: dict[str, int] = {"S": 0, "H": 1, "D": 2, "C": 3}
 # fmt: off
@@ -51,8 +53,14 @@ def send_to_photon(formatted: str) -> None:
         headers={"Authorization": "Bearer " + ACCESS_TOKEN},
         data={"arg": formatted},
     )
-    print("\nSent data to Particle!\n")
-    print(resp.text)
+    print(f"\nSent data to Particle! {formatted}\n{resp.text}\n")
+
+
+def photon_queue_worker() -> None:
+    while True:
+        formatted = photon_queue.get()
+        send_to_photon(formatted)
+        photon_queue.task_done()
 
 
 def format_cards_for_particle(dealer_cards: dict[str, int], player_cards: dict[str, int]) -> str:
@@ -122,7 +130,7 @@ def receive(websocket: ServerConnection):
             print(f"Dealer: {stable_dealer}, Player: {stable_player}")
             formatted = format_cards_for_particle(stable_dealer, stable_player)
             print(formatted)
-            Thread(target=send_to_photon, args=(formatted,), daemon=True).start()
+            photon_queue.put(formatted)
     except ConnectionClosedError:
         print("WebSocket Connection Closed.")
 
@@ -137,6 +145,7 @@ def process_request(path, request_headers):
 
 
 def main():
+    Thread(target=photon_queue_worker, daemon=True).start()
     tunnel = False
     ws_url = ""
     if len(sys.argv) > 2 and sys.argv[1] == "--tunnel":
