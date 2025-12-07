@@ -39,6 +39,7 @@ RANK_MAP: dict[str, int] = {
 
 
 def card_to_int(card: str) -> int:
+    card = card.upper()
     suit = card[-1]
     rank = card[:-1]
     return SUIT_MAP[suit] * 13 + RANK_MAP[rank]
@@ -50,6 +51,7 @@ def send_to_photon(formatted: str) -> None:
         headers={"Authorization": "Bearer " + ACCESS_TOKEN},
         data={"arg": formatted},
     )
+    print("\nSent data to Particle!\n")
     print(resp.text)
 
 
