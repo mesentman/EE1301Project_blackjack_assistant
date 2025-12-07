@@ -248,6 +248,10 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         
         dealCardPositionDealer++;
       }
+      if (dealer_cards.size() == 1) {
+          //draw dealer  card down when only one (card value) is showing from video
+          Paint_DrawCardDown(dcs + CSW, 152);
+      }
     }
     //-------------- DEALER CARDS -----------------
 
