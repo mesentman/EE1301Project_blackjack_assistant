@@ -11,10 +11,9 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        min-height: 100vh;
+        justify-content: center;
+        height: 100vh;
         margin: 0;
-        padding: 20px 0;
-        box-sizing: border-box;
       }
       h1 {
         color: #0078d7;
@@ -28,12 +27,12 @@
       .video-container::after {
         content: '';
         position: absolute;
-        left: 50%;
-        top: 0;
-        bottom: 0;
-        width: 2px;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
         background-color: red;
-        transform: translateX(-50%);
+        transform: translateY(-50%);
         pointer-events: none;
       }
       video, #processedImage {
