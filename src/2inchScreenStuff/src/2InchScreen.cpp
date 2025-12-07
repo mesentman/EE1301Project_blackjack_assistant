@@ -389,14 +389,34 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
 
     //----------------- Win Rate --------------------
     //if (winrate >= 0) {
-      if (winrate == 100) {winrate = 99;}
+    if (winrate == 100) {winrate = 99;}
 
-      if (win == true) {winrate = 99;}
-      if (lose == true) {winrate = 0;}
+      // Player busts → automatic loss
+    if (playerCount > 21) {
+      winrate = 0;
+    }
 
-      ChangeToStringPercent(winrate, &winSrate);
-      Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
-      Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
+    // Dealer busts → automatic win
+    else if (dealerCount > 21) {
+      winrate = 99;
+    }
+
+    // Higher hand wins
+    else if (playerCount > dealerCount) {
+      winrate = 99;
+    }
+    else if (dealerCount > playerCount) {
+      winrate = 0;
+    }
+
+    // Equal → push
+    else {
+      winrate = 50;   // or whatever you want
+    }
+
+    ChangeToStringPercent(winrate, &winSrate);
+    Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
+    Paint_DrawString_EN(225, 91, winSrate, &Font24, BLACK, RED);
 
     //}
     //else {Paint_DrawString_EN(225, 91, "---", &Font24, BLACK, RED);}
