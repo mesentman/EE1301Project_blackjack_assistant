@@ -3,6 +3,7 @@
 #include "blackjack.hpp"
 #include "screen.hpp"
 #include "win_rate_table.h"
+#include <algorithm>
 #include <vector>
 
 SYSTEM_MODE(AUTOMATIC);
@@ -146,6 +147,8 @@ void setup() {
 
 void loop() {
   static int true_count = 0;
+  static std::vector<int> last_player_cards;
+  static std::vector<int> last_dealer_cards;
   if (new_hand) {
     int player_total = 0;
     int ace_count = 0;
@@ -169,11 +172,18 @@ void loop() {
     }
 
     for (int card : player_cards) {
-      true_count += get_hi_lo_count(card);
+      if (std::find(last_player_cards.begin(), last_player_cards.end(), card) == last_player_cards.end()) {
+        true_count += get_hi_lo_count(card);
+      }
     }
     for (int card : dealer_cards) {
-      true_count += get_hi_lo_count(card);
+      if (std::find(last_dealer_cards.begin(), last_dealer_cards.end(), card) == last_dealer_cards.end()) {
+        true_count += get_hi_lo_count(card);
+      }
     }
+
+    last_player_cards = player_cards;
+    last_dealer_cards = dealer_cards;
 
     TableReturn ret = get_action_from_table(player_total, same_card, usable_ace,
                                             dealer_upcard, true_count);
