@@ -381,7 +381,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
 
 
     //----------------- Run/True Count --------------------
-      ChangeToString(trueCount, &trueScount);
+      ChangeToString(true_count, &trueScount);
       Paint_DrawString_EN(225, 34, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
     //----------------- Run/True Count --------------------
