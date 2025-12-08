@@ -7,6 +7,7 @@
 #include "blackjack.hpp"
 #include "fonts.h" // make sure your font file is included
 #include "ace.hpp" 
+#include "win_rate_table.h"
 // Screen Pinout
 //   VCC -> 3V3
 //   GND -> GND 
@@ -406,8 +407,8 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
     // ---------------------------------------------------------
     // 2. DETERMINE DEALER ACTION
     // ---------------------------------------------------------
-    // Hit if < 17 OR (Total is 17 AND we still have a Soft Ace)
-    dealercanhit = (dealerCount < 17);
+    // Hit if < 17
+    dealercanhit = (dealerCount < 17) || (dealerCount == 17 && DealerSoftAces > 0);
 
     // ---------------------------------------------------------
     // 3. CALCULATE WIN RATE
@@ -459,7 +460,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
         int idx_tc = liveTC + 5; 
 
         // Retrieve value
-        winrate = blackjack_policy[idx_player][idx_usable][idx_dealer][idx_tc];
+        winrate = blackjack_winrates[idx_player][idx_usable][idx_dealer][idx_tc];
     }
 
 
