@@ -146,6 +146,11 @@ int suitPlayer;
 int valPlayer;
 
 
+ int trueCount;
+
+
+
+
 
 void display_cards(Action action, std::vector<int> player_cards, std::vector<int> dealer_cards, int true_count, int winrate) {
   bool runOnce = false;
@@ -155,7 +160,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
 
   int dealerCount = 0;
   int playerCount = 0;
-  int trueCount = 0;
+ 
   String dealerScount;
   String playerScount;
   String winSrate;
@@ -379,6 +384,13 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
       Paint_DrawString_EN(225, 34, "   ", &Font24, BLACK, RED);
       Paint_DrawString_EN(225, 34, trueScount, &Font24, BLACK, RED);
     //----------------- Run/True Count --------------------
+
+
+
+
+
+
+
 
 
     // ---------------------------------------------------------
