@@ -449,6 +449,26 @@ void Paint_DrawCardUp(UWORD x, UWORD y, int suit, int VALUE) {
     }
 
     // --- Draw card VALUE ---
+
+    if (VALUE == 10) {
+        //top corner
+        Paint_DrawString_EN(x, y + 3, "1", &Font16, WHITE, color);
+        Paint_DrawString_EN(x + 7, y + 3, "0", &Font16, WHITE, color);
+
+
+        // --- Draw large center value ---
+        int centerX = x + cardW / 2 - (9);  // slight horizontal offset
+        int centerY = y + cardH / 2 - 12; // vertical offset for balance
+        Paint_DrawString_EN(centerX, centerY, "10", &Font24, WHITE, color);
+
+
+        //bottom corner
+        Paint_DrawString_EN(x + cardW - 20, y + cardH - 28, "1", &Font16, WHITE, color);
+        Paint_DrawString_EN(x + cardW - 13, y + cardH - 28, "0", &Font16, WHITE, color);
+    }
+
+
+    else {
     // Convert VALUE (1–13) into text (A, 2–10, J, Q, K)
     char valueStr[3];
     switch (VALUE) {
@@ -470,7 +490,7 @@ void Paint_DrawCardUp(UWORD x, UWORD y, int suit, int VALUE) {
     int centerY = y + cardH / 2 - 12; // vertical offset for balance
     Paint_DrawString_EN(centerX, centerY, valueStr, &Font24, WHITE, color);
 }
-
+}
 
 
 
