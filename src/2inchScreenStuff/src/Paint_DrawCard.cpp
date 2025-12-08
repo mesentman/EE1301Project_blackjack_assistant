@@ -451,11 +451,11 @@ void Paint_DrawCardUp(UWORD x, UWORD y, int suit, int VALUE) {
     // --- Draw card VALUE ---
 
     if (VALUE == 10) {
-        Paint_DrawString_EN(x + 1, y + 3, "1", &Font16, WHITE, color);
-        Paint_DrawString_EN(x + 6, y + 3, "0", &Font16, WHITE, color);
+        Paint_DrawString_EN(x, y + 3, "1", &Font16, WHITE, color);
+        Paint_DrawString_EN(x + 7, y + 3, "0", &Font16, WHITE, color);
 
-        Paint_DrawString_EN(x + cardW - 19, y + cardH - 28, "1", &Font16, WHITE, color);
-        Paint_DrawString_EN(x + cardW - 14, y + cardH - 28, "0", &Font16, WHITE, color);
+        Paint_DrawString_EN(x + cardW - 20, y + cardH - 28, "1", &Font16, WHITE, color);
+        Paint_DrawString_EN(x + cardW - 13, y + cardH - 28, "0", &Font16, WHITE, color);
     }
 
 
