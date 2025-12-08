@@ -6,6 +6,7 @@
 #include "Particle.h"
 #include "blackjack.hpp"
 #include "fonts.h" // make sure your font file is included
+#include "ace.hpp" 
 // Screen Pinout
 //   VCC -> 3V3
 //   GND -> GND 
@@ -161,6 +162,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
   String trueScount;
   bool win = false;
   bool lose = false;
+  bool dealercanhit;
   while (runOnce == false) {
 
     // clear card table first
@@ -339,7 +341,6 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
 
 
 
-
     //----------------- ACTION --------------------
     if ((action == HIT) || (action == STAND) || (action == DOUBLE_DOWN) ||
         (action == SPLIT)) {
@@ -380,39 +381,78 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
     //----------------- Run/True Count --------------------
 
 
+    // ---------------------------------------------------------
+    // 1. SETUP & ACE ADJUSTMENT
+    // ---------------------------------------------------------
+    int PlayerSoftAces = CountAces(player_cards);
+    int DealerSoftAces = CountAces(dealer_cards);
 
+    // Recursively reduce total if > 21 and we have aces
+    AdjustForAces(playerCount, PlayerSoftAces);
+    AdjustForAces(dealerCount, DealerSoftAces);
 
+    // ---------------------------------------------------------
+    // 2. DETERMINE DEALER ACTION
+    // ---------------------------------------------------------
+    // Hit if < 17 OR (Total is 17 AND we still have a Soft Ace)
+    dealercanhit = (dealerCount < 17) || (dealerCount == 17 && DealerSoftAces > 0);
 
+    // ---------------------------------------------------------
+    // 3. CALCULATE WIN RATE
+    // ---------------------------------------------------------
 
-
-
-
-    //----------------- Win Rate --------------------
-    //if (winrate >= 0) {
-    if (winrate == 100) {winrate = 99;}
-
-      // Player busts → automatic loss
+    // CASE A: Player Busts (Guaranteed Loss)
     if (playerCount > 21) {
-      winrate = 0;
+        winrate = 0;
     }
-
-    // Dealer busts → automatic win
+    // CASE B: Dealer Busts (Guaranteed Win)
     else if (dealerCount > 21) {
-      winrate = 99;
+        winrate = 99;
     }
-
-    // Higher hand wins
-    else if (playerCount > dealerCount) {
-      winrate = 99;
+    // CASE C: Dealer Stands (Game Over) -> Compare Totals
+    else if (!dealercanhit) {
+        if (playerCount > dealerCount) {
+            winrate = 99;
+        } else if (dealerCount > playerCount) {
+            winrate = 0;
+        } else {
+            winrate = 50; // Push
+        }
     }
-    else if (dealerCount > playerCount) {
-      winrate = 0;
-    }
-
-    // Equal → push
+    // CASE D: Dealer Hits (Game Ongoing) -> LOOKUP TABLE
     else {
-      winrate = 50;   // or whatever you want
+        // --- Prepare Indices ---
+        
+        // Index 1: Player Total
+        int idx_player = playerCount;
+        if (idx_player > 21) idx_player = 21; // Safety cap
+
+        // Index 2: Usable Ace (0=No, 1=Yes)
+        int idx_usable = (PlayerSoftAces > 0) ? 1 : 0;
+
+        // Index 3: Dealer Card (Ace=0 ... Face=9)
+        int dVal = (dealer_cards.at(0) % 13) + 1; 
+        if (dVal > 10) dVal = 10; // K, Q, J become 10
+        int idx_dealer = dVal - 1; 
+
+        // Index 4: True Count (Clamped -5 to +6)
+        // We use the running count on screen + the starting true count
+        int liveTC = true_count;
+        
+        // --- CLAMPING LOGIC ---
+        if (liveTC < -5) liveTC = -5;
+        if (liveTC > 6)  liveTC = 6;
+        
+        // Map range [-5 ... +6] to index [0 ... 11]
+        int idx_tc = liveTC + 5; 
+
+        // Retrieve value
+        winrate = blackjack_policy[idx_player][idx_usable][idx_dealer][idx_tc];
     }
+
+
+    
+    
 
     ChangeToStringPercent(winrate, &winSrate);
     Paint_DrawString_EN(225, 91, "   ", &Font24, BLACK, RED);
