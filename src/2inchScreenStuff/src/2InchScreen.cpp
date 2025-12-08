@@ -407,7 +407,7 @@ void display_cards(Action action, std::vector<int> player_cards, std::vector<int
     // 2. DETERMINE DEALER ACTION
     // ---------------------------------------------------------
     // Hit if < 17 OR (Total is 17 AND we still have a Soft Ace)
-    dealercanhit = (dealerCount < 17) || (dealerCount == 17 && DealerSoftAces > 0);
+    dealercanhit = (dealerCount < 17);
 
     // ---------------------------------------------------------
     // 3. CALCULATE WIN RATE
