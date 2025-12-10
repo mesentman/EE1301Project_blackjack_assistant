@@ -1,8 +1,6 @@
 import subprocess
 import re
-import time
 import signal
-import sys
 
 
 def start_tunnel(cloudflared_path, local_url):
@@ -19,9 +17,7 @@ def start_tunnel(cloudflared_path, local_url):
 
     tunnel_url = None
 
-    # Read cloudflared output line-by-line until the URL appears
     for line in process.stdout:
-        # print("CF:", line.strip())  # optional logging
 
         match = url_pattern.search(line)
         if match:
@@ -38,21 +34,3 @@ def stop_tunnel(process):
         process.wait(timeout=5)
     except Exception:
         process.kill()
-
-
-# ------------------------------
-# Example usage
-# ------------------------------
-
-if __name__ == "__main__":
-    url, proc = start_tunnel()
-    print("Tunnel is live at:", url)
-
-    try:
-        # Your app logic here
-        print("Doing stuff with the tunnel...")
-        time.sleep(5)  # Replace with your real app code
-
-    finally:
-        stop_tunnel(proc)
-        print("Tunnel closed.")
